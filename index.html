@@ -26,7 +26,6 @@
             },
             cream: {
               DEFAULT: '#FDFCFB',
-              50: '#FFFcf9',
               100: '#F7F3EE',
               200: '#EFE8DF'
             },
@@ -46,11 +45,6 @@
     };
   </script>
   <style>
-    :root {
-      --brand: #0F3D2E;
-      --cream: #FDFCFB;
-      --gold: #C9A07A;
-    }
     html { scroll-behavior: smooth; }
     body {
       font-family: Vazirmatn, Tahoma, sans-serif;
@@ -65,8 +59,7 @@
     }
     .gold-btn:active { transform: scale(0.98); }
     .hero-overlay {
-      background:
-        linear-gradient(180deg, rgba(7, 25, 18, 0.18) 0%, rgba(15, 61, 46, 0.22) 38%, rgba(7, 25, 18, 0.88) 100%);
+      background: linear-gradient(180deg, rgba(7, 25, 18, 0.18) 0%, rgba(15, 61, 46, 0.22) 38%, rgba(7, 25, 18, 0.88) 100%);
     }
     .ornament {
       width: 72px;
@@ -76,12 +69,9 @@
     .dropzone {
       border: 1.5px dashed rgba(201, 160, 122, 0.7);
       background: rgba(253, 252, 251, 0.7);
-      transition: border-color .2s, background .2s, transform .2s;
+      transition: border-color .2s, background .2s;
     }
-    .dropzone.dragover {
-      border-color: #D4AF37;
-      background: #E8D5C4;
-    }
+    .dropzone.dragover { border-color: #D4AF37; background: #E8D5C4; }
     .chip {
       min-height: 44px;
       border: 1px solid rgba(15, 61, 46, 0.12);
@@ -94,28 +84,12 @@
       border-color: #0F3D2E;
       box-shadow: 0 8px 20px rgba(15, 61, 46, 0.22);
     }
-    .style-chip.active {
-      background: #0F3D2E;
-      color: #FDFCFB;
-      border-color: #D4AF37;
-    }
-    #compare {
-      touch-action: none;
-      user-select: none;
-    }
-    #sliderHandle {
-      width: 44px;
-      margin-left: -22px;
-      cursor: ew-resize;
-    }
-    .handle-line {
-      width: 2px;
-      background: #FDFCFB;
-      box-shadow: 0 0 12px rgba(0,0,0,.35);
-    }
+    .style-chip.active { border-color: #D4AF37; }
+    #compare { touch-action: none; user-select: none; }
+    #sliderHandle { width: 44px; margin-left: -22px; cursor: ew-resize; }
+    .handle-line { width: 2px; background: #FDFCFB; box-shadow: 0 0 12px rgba(0,0,0,.35); }
     .handle-knob {
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       background: linear-gradient(135deg, #FDFCFB, #E8D5C4);
       border: 1.5px solid #D4AF37;
       box-shadow: 0 6px 18px rgba(0,0,0,.28);
@@ -131,8 +105,7 @@
       box-shadow: 0 0 0 3px rgba(201, 160, 122, 0.22);
     }
     .spinner {
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       border: 2.5px solid rgba(253,252,251,.25);
       border-top-color: #D4AF37;
       border-radius: 50%;
@@ -151,7 +124,6 @@
 <body class="font-vazir antialiased">
   <div class="mx-auto min-h-screen max-w-lg bg-cream shadow-[0_0_80px_rgba(0,0,0,.35)]">
 
-    <!-- SECTION 1: HERO -->
     <section id="hero" class="relative min-h-[100svh] overflow-hidden">
       <img
         src="https://raw.githubusercontent.com/uname1370-create/site3/main/asalrajabi.png"
@@ -164,9 +136,8 @@
       <div class="relative z-10 flex min-h-[100svh] flex-col justify-end px-6 pb-10 pt-[max(2rem,env(safe-area-inset-top))]">
         <div class="rise">
           <p class="mb-3 text-[11px] font-medium tracking-[0.28em] text-gold-light">ASAL RAJABI  ·  PMU ARTIST</p>
-          <h1 class="text-[1.85rem] font-extrabold leading-snug text-white sm:text-3xl">
-            عسل رجبی
-            <span class="mt-1 block text-lg font-medium text-gold-light">میکروبلیدینگ و شیدینگ لب</span>
+          <h1 class="text-[1.7rem] font-extrabold leading-snug text-white sm:text-3xl">
+            عسل رجبی | میکروبلیدینگ و شیدینگ لب
           </h1>
           <div class="my-4 ornament"></div>
           <p class="mb-7 max-w-xs text-[15px] font-light leading-8 text-cream/90">
@@ -179,7 +150,6 @@
       </div>
     </section>
 
-    <!-- SECTION 2: SERVICES & UPLOAD -->
     <section id="services" class="px-5 pb-4 pt-10">
       <p class="text-center text-[11px] font-medium tracking-[0.22em] text-gold-deep">۰۱  ·  انتخاب خدمت</p>
       <h2 class="mt-2 text-center text-xl font-extrabold text-brand-800">چه کاری مد نظرته؟</h2>
@@ -187,7 +157,7 @@
         اول خدمتت رو انتخاب کن، بعد یه سلفی واضح آپلود کن.
       </p>
 
-      <div class="mt-6 grid grid-cols-3 gap-2.5" role="tablist">
+      <div class="mt-6 grid grid-cols-3 gap-2.5">
         <button type="button" data-service="brow" class="chip service-btn active rounded-2xl px-2 text-[13px] font-semibold">ابرو</button>
         <button type="button" data-service="lip" class="chip service-btn rounded-2xl px-2 text-[13px] font-semibold">لب</button>
         <button type="button" data-service="liner" class="chip service-btn rounded-2xl px-2 text-[13px] font-semibold">خط چشم</button>
@@ -205,7 +175,7 @@
       </label>
 
       <p class="mt-6 text-center text-xs font-medium text-brand-800/55">یا با عکس نمونه تست کن</p>
-      <div class="mt-3 flex justify-center gap-3" id="presets">
+      <div class="mt-3 flex justify-center gap-3">
         <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop&crop=faces&q=80">
           <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&crop=faces&q=60" alt="نمونه ۱" class="h-full w-full object-cover" />
         </button>
@@ -218,7 +188,6 @@
       </div>
     </section>
 
-    <!-- SECTION 3: MAGIC ROOM -->
     <section id="magic" class="px-5 pb-6 pt-10">
       <p class="text-center text-[11px] font-medium tracking-[0.22em] text-gold-deep">۰۲  ·  اتاق جادویی</p>
       <h2 class="mt-2 text-center text-xl font-extrabold text-brand-800">قبل و بعد را مقایسه کن</h2>
@@ -257,14 +226,14 @@
         </div>
       </div>
 
-      <div id="styleRow" class="mt-5 grid grid-cols-4 gap-2"></div>
+      <p class="mt-5 text-center text-[11px] font-medium text-brand-800/50">انتخاب مدل</p>
+      <div id="styleRow" class="mt-2 flex flex-wrap gap-2"></div>
 
       <button id="wantThis" type="button" class="gold-btn mt-5 flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold opacity-50" disabled>
         همین مدل رو میخوام! (رزرو نوبت)
       </button>
     </section>
 
-    <!-- SECTION 4: BOOKING -->
     <section id="booking" class="px-5 pb-12 pt-8">
       <p class="text-center text-[11px] font-medium tracking-[0.22em] text-gold-deep">۰۳  ·  رزرو نوبت</p>
       <h2 class="mt-2 text-center text-xl font-extrabold text-brand-800">فرم رزرو</h2>
@@ -302,29 +271,33 @@
     import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/+esm";
 
     const SERVICE_LABELS = { brow: "ابرو", lip: "لب", liner: "خط چشم" };
+
     const STYLES = {
       brow: [
-        { id: "natural", name: "طبیعی", color: "#5C4030", alpha: 0.40, inflate: 1.04 },
-        { id: "soft", name: "سافت", color: "#6B4F3A", alpha: 0.36, inflate: 1.08 },
-        { id: "defined", name: "حرفه‌ای", color: "#3A2418", alpha: 0.50, inflate: 1.10 },
-        { id: "bold", name: "پررنگ", color: "#24150E", alpha: 0.58, inflate: 1.16 }
+        { id: "natural", name: "طبیعی", hint: "تراکم کم، قوس نرم", kind: "natural", color: "#6A4A38" },
+        { id: "micro", name: "میکروبلیدینگ", hint: "تارهای مو مانند", kind: "hairstroke", color: "#3E2A1C" },
+        { id: "powder", name: "سایه پودری", hint: "سر کمرنگ، دم پررنگ", kind: "ombre", color: "#4A3122" },
+        { id: "feather", name: "کرکی", hint: "هوایی و پر مانند", kind: "feather", color: "#5A3D2A" },
+        { id: "bold", name: "کلاسیک بولد", hint: "قوس واضح، لبه تمیز", kind: "bold", color: "#2A1810" }
       ],
       lip: [
-        { id: "nude", name: "نود", color: "#C9897B", alpha: 0.42 },
-        { id: "rose", name: "رزگلد", color: "#B76E79", alpha: 0.48 },
-        { id: "berry", name: "بری", color: "#8B3A4A", alpha: 0.52 },
-        { id: "bold", name: "قرمز", color: "#9B2335", alpha: 0.56 }
+        { id: "nude", name: "نود رزی", hint: "ساتین ملایم", color: "#C9897B", finish: "satin", alpha: 0.38 },
+        { id: "coral", name: "کالباسی مات", hint: "مرجانی مات", color: "#D07060", finish: "matte", alpha: 0.42 },
+        { id: "brick", name: "آجری", hint: "ولوت گرم", color: "#A24B3A", finish: "matte", alpha: 0.46 },
+        { id: "pink", name: "صورتی مخملی", hint: "ساتین مخمل", color: "#C45C78", finish: "satin", alpha: 0.44 },
+        { id: "berry", name: "بری تیره", hint: "عمیق و غنی", color: "#7A2E44", finish: "satin", alpha: 0.48 }
       ],
       liner: [
-        { id: "natural", name: "طبیعی", color: "#3D2B1F", width: 1.5, wing: 0, smudge: false },
-        { id: "soft", name: "اسموکی", color: "#2C2118", width: 2.3, wing: 0.4, smudge: true },
-        { id: "classic", name: "کلاسیک", color: "#14110E", width: 2.1, wing: 1.15, smudge: false },
-        { id: "bold", name: "گربه‌ای", color: "#0A0908", width: 2.7, wing: 1.55, smudge: false }
+        { id: "lash", name: "بن‌مژه", hint: "خیلی ظریف بین مژه‌ها", kind: "lash", color: "#2A2118" },
+        { id: "classic", name: "کلاسیک", hint: "خط نازک و تمیز", kind: "classic", color: "#16110E" },
+        { id: "cat", name: "گربه‌ای", hint: "باله ظریف و کشیده", kind: "cat", color: "#0C0A08" },
+        { id: "smoky", name: "دودی", hint: "محو و اسموکی", kind: "smoky", color: "#1A1512" }
       ]
     };
 
     const LIP_OUTER = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 181, 91, 146];
     const LIP_INNER = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
+    const LIP_HOLE = [78, 191, 80, 13, 312, 308, 14, 87];
     const LEFT_BROW = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
     const RIGHT_BROW = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
     const LEFT_LASH = [33, 246, 161, 160, 159, 158, 157, 173, 133];
@@ -339,12 +312,12 @@
       landmarks: null,
       displayW: 0,
       displayH: 0,
-      split: 0.5,
-      ready: false
+      split: 0.5
     };
 
     let landmarker = null;
     let landmarkerPromise = null;
+    let layerCanvas = null;
 
     const els = {
       serviceBtns: document.querySelectorAll(".service-btn"),
@@ -381,10 +354,13 @@
     function renderStyles() {
       const list = STYLES[state.service];
       if (!list.some((s) => s.id === state.styleId)) state.styleId = list[0].id;
+      const basis = list.length === 4 ? "basis-[46%]" : "basis-[30%]";
       els.styleRow.innerHTML = list.map((s) => `
         <button type="button" data-style="${s.id}"
-          class="style-chip chip rounded-2xl px-1 text-[11px] font-semibold ${s.id === state.styleId ? "active" : ""}">
-          ${s.name}
+          class="style-chip chip ${basis} grow rounded-2xl px-2 py-2.5 text-center ${s.id === state.styleId ? "active" : ""}">
+          ${s.color && state.service === "lip" ? `<span class="mx-auto mb-1.5 block h-3 w-3 rounded-full ring-1 ring-black/10" style="background:${s.color}"></span>` : ""}
+          <span class="block text-[12px] font-bold leading-5">${s.name}</span>
+          <span class="mt-0.5 block text-[10px] font-light leading-4 opacity-70">${s.hint}</span>
         </button>`).join("");
       els.styleRow.querySelectorAll(".style-chip").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -399,6 +375,7 @@
     els.serviceBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         state.service = btn.dataset.service;
+        state.styleId = STYLES[state.service][0].id;
         els.serviceBtns.forEach((b) => b.classList.toggle("active", b === btn));
         renderStyles();
         syncServiceField();
@@ -422,7 +399,6 @@
         } catch {
           landmarker = await FaceLandmarker.createFromOptions(vision, options("CPU"));
         }
-        state.ready = true;
         if (!state.image) {
           els.placeholder.querySelector(".spinner")?.classList.add("hidden");
           els.placeholderText.textContent = "برای شروع، یک عکس انتخاب کن";
@@ -482,11 +458,14 @@
       }
     }
 
+    function dpr() {
+      return Math.min(window.devicePixelRatio || 1, 3);
+    }
+
     function layoutCanvases() {
       const img = state.image;
       if (!img) return;
-      const container = els.compare.parentElement;
-      const maxW = container.clientWidth;
+      const maxW = els.compare.parentElement.clientWidth;
       const aspect = img.naturalWidth / img.naturalHeight;
       state.displayW = maxW;
       state.displayH = Math.round(maxW / aspect);
@@ -494,17 +473,18 @@
       setupCanvas(els.beforeCanvas, state.displayW, state.displayH);
       els.beforeCanvas.style.width = state.displayW + "px";
       els.beforeCanvas.style.height = state.displayH + "px";
+      ensureLayer(state.displayW, state.displayH);
       applySplit(state.split);
     }
 
     function setupCanvas(canvas, w, h) {
-      const dpr = Math.min(window.devicePixelRatio || 1, 3);
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
+      const r = dpr();
+      canvas.width = Math.round(w * r);
+      canvas.height = Math.round(h * r);
       canvas.style.width = w + "px";
       canvas.style.height = h + "px";
       const ctx = canvas.getContext("2d");
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.setTransform(r, 0, 0, r, 0, 0);
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
       return ctx;
@@ -512,11 +492,19 @@
 
     function ctx2d(canvas) {
       const ctx = canvas.getContext("2d");
-      const dpr = Math.min(window.devicePixelRatio || 1, 3);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const r = dpr();
+      ctx.setTransform(r, 0, 0, r, 0, 0);
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
       return ctx;
+    }
+
+    function ensureLayer(w, h) {
+      const r = dpr();
+      if (!layerCanvas) layerCanvas = document.createElement("canvas");
+      layerCanvas.width = Math.round(w * r);
+      layerCanvas.height = Math.round(h * r);
+      return ctx2d(layerCanvas);
     }
 
     function drawOriginalOnly() {
@@ -549,23 +537,20 @@
       ctx.moveTo(points[0].x, points[0].y);
       if (points.length === 2) {
         ctx.lineTo(points[1].x, points[1].y);
+        return;
+      }
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        ctx.quadraticCurveTo(p0.x, p0.y, (p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
+      }
+      const last = points[points.length - 1];
+      if (closed) {
+        const first = points[0];
+        ctx.quadraticCurveTo(last.x, last.y, (last.x + first.x) / 2, (last.y + first.y) / 2);
+        ctx.closePath();
       } else {
-        for (let i = 0; i < points.length - 1; i++) {
-          const p0 = points[i];
-          const p1 = points[i + 1];
-          const mx = (p0.x + p1.x) / 2;
-          const my = (p0.y + p1.y) / 2;
-          ctx.quadraticCurveTo(p0.x, p0.y, mx, my);
-        }
-        const last = points[points.length - 1];
-        if (closed) {
-          const first = points[0];
-          ctx.quadraticCurveTo(last.x, last.y, (last.x + first.x) / 2, (last.y + first.y) / 2);
-          ctx.quadraticCurveTo(first.x, first.y, first.x, first.y);
-          ctx.closePath();
-        } else {
-          ctx.lineTo(last.x, last.y);
-        }
+        ctx.lineTo(last.x, last.y);
       }
     }
 
@@ -584,6 +569,250 @@
       }));
     }
 
+    function lerpPt(curve, t) {
+      const n = curve.length - 1;
+      const f = Math.max(0, Math.min(1, t)) * n;
+      const i = Math.min(n - 1, Math.floor(f));
+      const u = f - i;
+      return {
+        x: curve[i].x + (curve[i + 1].x - curve[i].x) * u,
+        y: curve[i].y + (curve[i + 1].y - curve[i].y) * u
+      };
+    }
+
+    function hash(i) {
+      const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+      return x - Math.floor(x);
+    }
+
+    function splitBrow(poly) {
+      return {
+        upper: poly.slice(0, 5).reverse(),
+        lower: poly.slice(5)
+      };
+    }
+
+    function liftArch(poly, amount) {
+      const copy = poly.map((p) => ({ ...p }));
+      copy[2].y -= amount;
+      copy[1].y -= amount * 0.45;
+      copy[3].y -= amount * 0.35;
+      return copy;
+    }
+
+    function compositeLayer(main, w, h, mode, alpha) {
+      main.save();
+      main.globalCompositeOperation = mode;
+      main.globalAlpha = alpha;
+      main.drawImage(layerCanvas, 0, 0, w, h);
+      main.restore();
+    }
+
+    function paintMakeup(ctx, lm, w, h, service, style) {
+      if (service === "brow") {
+        drawOneBrow(ctx, pts(lm, LEFT_BROW, w, h), w, h, style, 1);
+        drawOneBrow(ctx, pts(lm, RIGHT_BROW, w, h), w, h, style, 2);
+      } else if (service === "lip") {
+        drawLips(ctx, lm, w, h, style);
+      } else {
+        drawLiner(ctx, lm, w, h, style);
+      }
+    }
+
+    function fillBrowShape(o, poly, color, blur) {
+      o.save();
+      o.filter = `blur(${blur}px)`;
+      o.fillStyle = color;
+      smoothPath(o, poly, true);
+      o.fill();
+      o.restore();
+    }
+
+    function drawHairStrokes(o, upper, lower, opts, seed) {
+      const n = opts.count;
+      o.save();
+      o.strokeStyle = opts.color;
+      o.lineCap = "round";
+      o.lineJoin = "round";
+      o.filter = opts.blur ? `blur(${opts.blur}px)` : "none";
+      for (let i = 0; i < n; i++) {
+        const t = i / (n - 1);
+        const u = lerpPt(upper, t);
+        const l = lerpPt(lower, t);
+        const cx = (u.x + l.x) / 2;
+        const cy = (u.y + l.y) / 2;
+        const thick = Math.hypot(u.x - l.x, u.y - l.y);
+        const t2 = Math.min(1, t + 0.1);
+        const u2 = lerpPt(upper, t2);
+        const l2 = lerpPt(lower, t2);
+        let dx = (u2.x + l2.x) / 2 - cx;
+        let dy = (u2.y + l2.y) / 2 - cy;
+        if (t < opts.upLiftUntil) {
+          dy -= Math.abs(dx) * opts.upLift * (1 - t / opts.upLiftUntil);
+        }
+        const len = Math.hypot(dx, dy) || 1;
+        dx /= len; dy /= len;
+        const jitter = (hash(seed + i) - 0.5) * opts.jitter;
+        const c = Math.cos(jitter), s = Math.sin(jitter);
+        const hx = dx * c - dy * s;
+        const hy = dx * s + dy * c;
+        const across = (hash(seed + i + 9) - 0.5) * thick * opts.spread;
+        const nx = -dy, ny = dx;
+        const sx = cx + nx * across;
+        const sy = cy + ny * across;
+        const hairLen = thick * opts.lenMul * (0.65 + hash(seed + i + 3) * 0.5);
+        const dens = opts.density(t);
+        o.globalAlpha = opts.alpha * dens * (0.5 + hash(seed + i + 5) * 0.5);
+        o.lineWidth = Math.max(0.45, opts.strokeW * (0.55 + hash(seed + i + 11) * 0.7));
+        o.beginPath();
+        const back = opts.back || 0.28;
+        o.moveTo(sx - hx * hairLen * back, sy - hy * hairLen * back);
+        o.quadraticCurveTo(sx, sy, sx + hx * hairLen * (1 - back), sy + hy * hairLen * (1 - back));
+        o.stroke();
+      }
+      o.restore();
+    }
+
+    function drawOneBrow(main, poly, w, h, style, seed) {
+      const o = ensureLayer(w, h);
+      o.clearRect(0, 0, w, h);
+      let shaped = poly;
+      if (style.kind === "bold") shaped = liftArch(poly, w * 0.006);
+      if (style.kind === "natural") shaped = inflate(poly, 0.96);
+      const { upper, lower } = splitBrow(shaped);
+      const inner = { x: (upper[0].x + lower[0].x) / 2, y: (upper[0].y + lower[0].y) / 2 };
+      const outer = {
+        x: (upper[upper.length - 1].x + lower[lower.length - 1].x) / 2,
+        y: (upper[upper.length - 1].y + lower[lower.length - 1].y) / 2
+      };
+
+      if (style.kind === "natural") {
+        fillBrowShape(o, inflate(shaped, 1.02), style.color, 3.4);
+        compositeLayer(main, w, h, "multiply", 0.32);
+        o.clearRect(0, 0, w, h);
+        drawHairStrokes(o, upper, lower, {
+          count: 26, color: style.color, alpha: 0.42, strokeW: 0.7, lenMul: 0.55,
+          jitter: 0.22, spread: 0.45, upLift: 0.35, upLiftUntil: 0.4, blur: 0.4,
+          density: () => 0.7
+        }, seed * 17);
+        compositeLayer(main, w, h, "multiply", 0.55);
+      } else if (style.kind === "hairstroke") {
+        fillBrowShape(o, shaped, style.color, 1.6);
+        compositeLayer(main, w, h, "multiply", 0.18);
+        o.clearRect(0, 0, w, h);
+        drawHairStrokes(o, upper, lower, {
+          count: 54, color: style.color, alpha: 0.7, strokeW: 0.55, lenMul: 0.92,
+          jitter: 0.12, spread: 0.62, upLift: 0.55, upLiftUntil: 0.42, blur: 0.15,
+          density: (t) => 0.75 + t * 0.25
+        }, seed * 31);
+        compositeLayer(main, w, h, "multiply", 0.72);
+      } else if (style.kind === "ombre") {
+        o.save();
+        o.filter = "blur(2.6px)";
+        smoothPath(o, inflate(shaped, 1.04), true);
+        o.clip();
+        const g = o.createLinearGradient(inner.x, inner.y, outer.x, outer.y);
+        g.addColorStop(0, "rgba(90,70,55,0.12)");
+        g.addColorStop(0.28, "rgba(70,48,34,0.28)");
+        g.addColorStop(0.62, "rgba(55,36,24,0.52)");
+        g.addColorStop(1, "rgba(40,24,16,0.7)");
+        o.fillStyle = g;
+        o.fillRect(0, 0, w, h);
+        o.restore();
+        compositeLayer(main, w, h, "multiply", 0.58);
+        o.clearRect(0, 0, w, h);
+        drawHairStrokes(o, upper, lower, {
+          count: 18, color: style.color, alpha: 0.28, strokeW: 0.5, lenMul: 0.5,
+          jitter: 0.08, spread: 0.3, upLift: 0.2, upLiftUntil: 0.3, blur: 0.6,
+          density: (t) => 0.2 + t * 0.8
+        }, seed * 41);
+        compositeLayer(main, w, h, "multiply", 0.45);
+      } else if (style.kind === "feather") {
+        fillBrowShape(o, inflate(shaped, 0.98), style.color, 2.8);
+        compositeLayer(main, w, h, "multiply", 0.16);
+        o.clearRect(0, 0, w, h);
+        drawHairStrokes(o, upper, lower, {
+          count: 36, color: style.color, alpha: 0.5, strokeW: 0.62, lenMul: 1.25,
+          jitter: 0.38, spread: 0.85, upLift: 0.85, upLiftUntil: 0.55, blur: 0.35,
+          back: 0.15, density: (t) => 0.9 - t * 0.25
+        }, seed * 53);
+        compositeLayer(main, w, h, "multiply", 0.62);
+      } else {
+        const boldPoly = inflate(shaped, 1.12);
+        fillBrowShape(o, boldPoly, style.color, 1.1);
+        compositeLayer(main, w, h, "multiply", 0.48);
+        o.clearRect(0, 0, w, h);
+        o.save();
+        o.filter = "blur(0.6px)";
+        o.strokeStyle = style.color;
+        o.lineWidth = Math.max(1.1, w * 0.0045);
+        o.globalAlpha = 0.55;
+        smoothPath(o, boldPoly, true);
+        o.stroke();
+        o.restore();
+        compositeLayer(main, w, h, "multiply", 0.7);
+      }
+    }
+
+    function drawLips(main, lm, w, h, style) {
+      const outer = pts(lm, LIP_OUTER, w, h);
+      const innerFull = pts(lm, LIP_INNER, w, h);
+      const hole = pts(lm, LIP_HOLE, w, h);
+      const o = ensureLayer(w, h);
+      o.clearRect(0, 0, w, h);
+
+      o.save();
+      o.filter = "blur(1.8px)";
+      o.fillStyle = style.color;
+      smoothPath(o, outer, true);
+      o.fill();
+      o.restore();
+
+      o.save();
+      o.filter = "none";
+      o.globalCompositeOperation = "destination-out";
+      o.fillStyle = "#000";
+      smoothPath(o, inflate(innerFull, 1.06), true);
+      o.fill();
+      smoothPath(o, inflate(hole, 1.1), true);
+      o.fill();
+      o.restore();
+
+      compositeLayer(main, w, h, "multiply", style.alpha);
+
+      if (style.finish === "satin") {
+        o.clearRect(0, 0, w, h);
+        const upper = pts(lm, [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291], w, h);
+        o.save();
+        o.filter = "blur(2.2px)";
+        o.fillStyle = "#fff8f4";
+        smoothPath(o, upper, true);
+        o.fill();
+        o.globalCompositeOperation = "destination-out";
+        o.filter = "none";
+        smoothPath(o, inflate(innerFull, 1.02), true);
+        o.fill();
+        o.restore();
+        compositeLayer(main, w, h, "soft-light", 0.34);
+      }
+
+      o.clearRect(0, 0, w, h);
+      o.save();
+      o.filter = "blur(0.7px)";
+      o.strokeStyle = style.color;
+      o.lineWidth = Math.max(0.8, w * 0.0024);
+      o.globalAlpha = 0.45;
+      smoothPath(o, outer, true);
+      o.stroke();
+      o.restore();
+      o.save();
+      o.globalCompositeOperation = "destination-out";
+      smoothPath(o, inflate(innerFull, 1.04), true);
+      o.fill();
+      o.restore();
+      compositeLayer(main, w, h, "multiply", 0.4);
+    }
+
     function offsetAway(points, origin, amount) {
       return points.map((p) => {
         const dx = p.x - origin.x;
@@ -593,124 +822,96 @@
       });
     }
 
-    function paintMakeup(ctx, lm, w, h, service, style) {
-      if (service === "brow") drawBrows(ctx, lm, w, h, style);
-      else if (service === "lip") drawLips(ctx, lm, w, h, style);
-      else drawLiner(ctx, lm, w, h, style);
+    function wingTip(lash, len, lift) {
+      const a = lash[0];
+      const b = lash[Math.min(2, lash.length - 1)];
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const d = Math.hypot(dx, dy) || 1;
+      return { x: a.x + (dx / d) * len, y: a.y + (dy / d) * len - lift };
     }
 
-    function drawBrows(ctx, lm, w, h, style) {
-      const left = inflate(pts(lm, LEFT_BROW, w, h), style.inflate);
-      const right = inflate(pts(lm, RIGHT_BROW, w, h), style.inflate);
-      ctx.save();
-      ctx.globalCompositeOperation = "multiply";
-      ctx.fillStyle = style.color;
-      ctx.globalAlpha = style.alpha;
-      ctx.shadowColor = style.color;
-      ctx.shadowBlur = 6;
-      smoothPath(ctx, left, true);
-      ctx.fill();
-      smoothPath(ctx, right, true);
-      ctx.fill();
-      ctx.restore();
+    function drawEye(main, lash, iris, w, h, style, seed) {
+      const o = ensureLayer(w, h);
+      o.clearRect(0, 0, w, h);
+      const scale = w / 420;
 
-      ctx.save();
-      ctx.globalCompositeOperation = "soft-light";
-      ctx.globalAlpha = 0.28;
-      ctx.fillStyle = "#3a2a20";
-      smoothPath(ctx, inflate(left, 0.92), true);
-      ctx.fill();
-      smoothPath(ctx, inflate(right, 0.92), true);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    function drawLips(ctx, lm, w, h, style) {
-      const outer = pts(lm, LIP_OUTER, w, h);
-      const inner = pts(lm, LIP_INNER, w, h);
-
-      ctx.save();
-      ctx.globalCompositeOperation = "multiply";
-      ctx.fillStyle = style.color;
-      ctx.globalAlpha = style.alpha;
-      ctx.beginPath();
-      addSmooth(ctx, outer, true);
-      addSmooth(ctx, inner, true);
-      ctx.fill("evenodd");
-      ctx.restore();
-
-      const upper = pts(lm, [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291], w, h);
-      ctx.save();
-      ctx.globalCompositeOperation = "soft-light";
-      ctx.globalAlpha = 0.35;
-      ctx.fillStyle = "#fff5f0";
-      smoothPath(ctx, upper, true);
-      ctx.fill();
-      ctx.restore();
-
-      ctx.save();
-      ctx.globalCompositeOperation = "multiply";
-      ctx.strokeStyle = style.color;
-      ctx.globalAlpha = Math.min(0.55, style.alpha + 0.08);
-      ctx.lineWidth = Math.max(1.1, w * 0.003);
-      ctx.lineJoin = "round";
-      smoothPath(ctx, outer, true);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawEye(ctx, lash, iris, style, w, outerIsFirst) {
-      const band = Math.max(1.2, style.width * (w / 420));
-      const outer = offsetAway(lash, iris, band * 1.15);
-      const wingLen = style.wing * (w * 0.028);
-      let wing = [];
-      if (wingLen > 0) {
-        const a = lash[0];
-        const b = lash[1];
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        const len = Math.hypot(dx, dy) || 1;
-        const ux = dx / len, uy = dy / len;
-        const up = outerIsFirst ? -0.55 : -0.55;
-        wing = [
-          { x: a.x + ux * wingLen, y: a.y + uy * wingLen + up * wingLen * 0.35 },
-          { x: a.x + ux * wingLen * 0.35, y: a.y + uy * wingLen * 0.2 - band * 0.6 }
-        ];
+      if (style.kind === "lash") {
+        o.save();
+        o.filter = "blur(0.45px)";
+        o.strokeStyle = style.color;
+        o.lineCap = "round";
+        o.lineWidth = Math.max(0.7, 1.05 * scale);
+        o.globalAlpha = 0.55;
+        smoothPath(o, lash, false);
+        o.stroke();
+        o.restore();
+        compositeLayer(main, w, h, "multiply", 0.7);
+        return;
       }
 
-      const poly = [...lash, ...(wing.length ? [wing[0]] : []), ...outer.slice().reverse()];
-      ctx.save();
-      ctx.globalCompositeOperation = "multiply";
-      ctx.fillStyle = style.color;
-      ctx.globalAlpha = style.smudge ? 0.42 : 0.62;
-      if (style.smudge) {
-        ctx.shadowColor = style.color;
-        ctx.shadowBlur = 8;
+      if (style.kind === "classic") {
+        const band = Math.max(1.15, 1.7 * scale);
+        const outer = offsetAway(lash, iris, band);
+        const poly = [...lash, ...outer.slice().reverse()];
+        o.save();
+        o.filter = "blur(0.55px)";
+        o.fillStyle = style.color;
+        smoothPath(o, poly, true);
+        o.fill();
+        o.restore();
+        compositeLayer(main, w, h, "multiply", 0.62);
+        return;
       }
-      smoothPath(ctx, poly, true);
-      ctx.fill();
-      ctx.restore();
 
-      ctx.save();
-      ctx.globalCompositeOperation = "multiply";
-      ctx.strokeStyle = style.color;
-      ctx.globalAlpha = 0.75;
-      ctx.lineWidth = Math.max(0.8, band * 0.45);
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      smoothPath(ctx, lash, false);
-      if (wing.length) ctx.lineTo(wing[0].x, wing[0].y);
-      ctx.stroke();
-      ctx.restore();
+      if (style.kind === "cat") {
+        const band = Math.max(1.3, 2.05 * scale);
+        const outer = offsetAway(lash, iris, band);
+        const tip = wingTip(lash, w * 0.046, w * 0.012);
+        const poly = [...lash, tip, ...outer.slice().reverse()];
+        o.save();
+        o.filter = "blur(0.5px)";
+        o.fillStyle = style.color;
+        smoothPath(o, poly, true);
+        o.fill();
+        o.strokeStyle = style.color;
+        o.lineWidth = Math.max(0.7, 0.9 * scale);
+        o.lineCap = "round";
+        smoothPath(o, [lash[0], tip], false);
+        o.stroke();
+        o.restore();
+        compositeLayer(main, w, h, "multiply", 0.68);
+        return;
+      }
+
+      const band = Math.max(1.8, 2.8 * scale);
+      const outer = offsetAway(lash, iris, band * 1.35);
+      const tip = wingTip(lash, w * 0.022, w * 0.006);
+      const poly = [...lash, tip, ...outer.slice().reverse()];
+      o.save();
+      o.filter = "blur(2.8px)";
+      o.fillStyle = style.color;
+      o.globalAlpha = 0.85;
+      smoothPath(o, poly, true);
+      o.fill();
+      o.restore();
+      compositeLayer(main, w, h, "multiply", 0.42);
+      o.clearRect(0, 0, w, h);
+      o.save();
+      o.filter = "blur(0.8px)";
+      o.strokeStyle = style.color;
+      o.lineWidth = Math.max(0.9, 1.3 * scale);
+      o.lineCap = "round";
+      o.globalAlpha = 0.7;
+      smoothPath(o, lash, false);
+      o.stroke();
+      o.restore();
+      compositeLayer(main, w, h, "multiply", 0.55);
     }
 
     function drawLiner(ctx, lm, w, h, style) {
-      const left = pts(lm, LEFT_LASH, w, h);
-      const right = pts(lm, RIGHT_LASH, w, h);
-      const li = pt(lm, LEFT_IRIS, w, h);
-      const ri = pt(lm, RIGHT_IRIS, w, h);
-      drawEye(ctx, left, li, style, w, true);
-      drawEye(ctx, right, ri, style, w, true);
+      drawEye(ctx, pts(lm, LEFT_LASH, w, h), pt(lm, LEFT_IRIS, w, h), w, h, style, 1);
+      drawEye(ctx, pts(lm, RIGHT_LASH, w, h), pt(lm, RIGHT_IRIS, w, h), w, h, style, 2);
     }
 
     function applySplit(t) {
@@ -726,31 +927,24 @@
     }
 
     let dragging = false;
-    const startDrag = (e) => {
+    els.compare.addEventListener("pointerdown", (e) => {
+      els.compare.setPointerCapture(e.pointerId);
       dragging = true;
-      const x = e.touches ? e.touches[0].clientX : e.clientX;
-      applySplit(pointerToSplit(x));
-    };
-    const moveDrag = (e) => {
+      applySplit(pointerToSplit(e.clientX));
+    });
+    els.compare.addEventListener("pointermove", (e) => {
       if (!dragging) return;
-      const x = e.touches ? e.touches[0].clientX : e.clientX;
-      applySplit(pointerToSplit(x));
-      e.preventDefault();
-    };
-    const endDrag = () => { dragging = false; };
-
-    els.compare.addEventListener("pointerdown", (e) => { els.compare.setPointerCapture(e.pointerId); startDrag(e); });
-    els.compare.addEventListener("pointermove", moveDrag);
-    els.compare.addEventListener("pointerup", endDrag);
-    els.compare.addEventListener("pointercancel", endDrag);
+      applySplit(pointerToSplit(e.clientX));
+    });
+    els.compare.addEventListener("pointerup", () => { dragging = false; });
+    els.compare.addEventListener("pointercancel", () => { dragging = false; });
 
     els.fileInput.addEventListener("change", async (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       const url = URL.createObjectURL(file);
       try {
-        const img = await loadImage(url, false);
-        await processImage(img);
+        await processImage(await loadImage(url, false));
       } finally {
         URL.revokeObjectURL(url);
         els.fileInput.value = "";
@@ -768,8 +962,7 @@
       if (!file || !file.type.startsWith("image/")) return;
       const url = URL.createObjectURL(file);
       try {
-        const img = await loadImage(url, false);
-        await processImage(img);
+        await processImage(await loadImage(url, false));
       } finally {
         URL.revokeObjectURL(url);
       }
@@ -778,8 +971,7 @@
     document.querySelectorAll(".preset-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
         try {
-          const img = await loadImage(btn.dataset.src, true);
-          await processImage(img);
+          await processImage(await loadImage(btn.dataset.src, true));
         } catch (err) {
           console.error(err);
           els.placeholderText.textContent = "بارگذاری عکس نمونه ناموفق بود.";
@@ -806,8 +998,7 @@
         `شماره: ${phone}\n` +
         `خدمات: ${serviceStyle}\n` +
         `تاریخ دلخواه: ${prettyDate}`;
-      const url = `https://wa.me/989150000000?text=${encodeURIComponent(message)}`;
-      window.location.href = url;
+      window.location.href = `https://wa.me/989150000000?text=${encodeURIComponent(message)}`;
     });
 
     let resizeTimer;
