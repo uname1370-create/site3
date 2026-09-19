@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0F3D2E" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="description" content="عسل رجبی | میکروبلیدینگ و شیدینگ لب — تست مجازی و رزرو نوبت" />
+  <title>عسل رجبی | میکروبلیدینگ و شیدینگ لب</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              950: '#071912',
+              900: '#0A2A20',
+              800: '#0F3D2E',
+              700: '#164A38',
+              600: '#1A5C45',
+              500: '#2A7A5C'
+            },
+            cream: {
+              DEFAULT: '#FDFCFB',
+              50: '#FFFcf9',
+              100: '#F7F3EE',
+              200: '#EFE8DF'
+            },
+            gold: {
+              DEFAULT: '#C9A07A',
+              light: '#E8D5C4',
+              metal: '#D4AF37',
+              rose: '#B76E79',
+              deep: '#8A6A4A'
+            }
+          },
+          fontFamily: {
+            vazir: ['Vazirmatn', 'Tahoma', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --brand: #0F3D2E;
+      --cream: #FDFCFB;
+      --gold: #C9A07A;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Vazirmatn, Tahoma, sans-serif;
+      background: #0A2A20;
+      color: #0F3D2E;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .gold-btn {
+      background: linear-gradient(135deg, #E8D5C4 0%, #D4AF37 42%, #C9A07A 100%);
+      color: #0F3D2E;
+      box-shadow: 0 10px 28px rgba(212, 175, 55, 0.28);
+    }
+    .gold-btn:active { transform: scale(0.98); }
+    .hero-overlay {
+      background:
+        linear-gradient(180deg, rgba(7, 25, 18, 0.18) 0%, rgba(15, 61, 46, 0.22) 38%, rgba(7, 25, 18, 0.88) 100%);
+    }
+    .ornament {
+      width: 72px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+    }
+    .dropzone {
+      border: 1.5px dashed rgba(201, 160, 122, 0.7);
+      background: rgba(253, 252, 251, 0.7);
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+    .dropzone.dragover {
+      border-color: #D4AF37;
+      background: #E8D5C4;
+    }
+    .chip {
+      min-height: 44px;
+      border: 1px solid rgba(15, 61, 46, 0.12);
+      background: #FDFCFB;
+      color: #0F3D2E;
+    }
+    .chip.active {
+      background: #0F3D2E;
+      color: #FDFCFB;
+      border-color: #0F3D2E;
+      box-shadow: 0 8px 20px rgba(15, 61, 46, 0.22);
+    }
+    .style-chip.active {
+      background: #0F3D2E;
+      color: #FDFCFB;
+      border-color: #D4AF37;
+    }
+    #compare {
+      touch-action: none;
+      user-select: none;
+    }
+    #sliderHandle {
+      width: 44px;
+      margin-left: -22px;
+      cursor: ew-resize;
+    }
+    .handle-line {
+      width: 2px;
+      background: #FDFCFB;
+      box-shadow: 0 0 12px rgba(0,0,0,.35);
+    }
+    .handle-knob {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #FDFCFB, #E8D5C4);
+      border: 1.5px solid #D4AF37;
+      box-shadow: 0 6px 18px rgba(0,0,0,.28);
+    }
+    .field {
+      background: #FDFCFB;
+      border: 1px solid rgba(15, 61, 46, 0.12);
+      min-height: 52px;
+    }
+    .field:focus {
+      outline: none;
+      border-color: #C9A07A;
+      box-shadow: 0 0 0 3px rgba(201, 160, 122, 0.22);
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid rgba(253,252,251,.25);
+      border-top-color: #D4AF37;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .rise { animation: rise .8s ease both; }
+    input[type="date"] { direction: rtl; }
+    input[type="date"]::-webkit-calendar-picker-indicator { opacity: .55; cursor: pointer; }
+  </style>
+</head>
+<body class="font-vazir antialiased">
+  <div class="mx-auto min-h-screen max-w-lg bg-cream shadow-[0_0_80px_rgba(0,0,0,.35)]">
+
+    <!-- SECTION 1: HERO -->
+    <section id="hero" class="relative min-h-[100svh] overflow-hidden">
+      <img
+        src="https://raw.githubusercontent.com/uname1370-create/site3/main/asalrajabi.png"
+        alt="عسل رجبی"
+        class="absolute inset-0 h-full w-full object-cover"
+        style="object-position: 78% center;"
+        onerror="this.onerror=null;this.src='asalrajabi.png'"
+      />
+      <div class="hero-overlay absolute inset-0"></div>
+      <div class="relative z-10 flex min-h-[100svh] flex-col justify-end px-6 pb-10 pt-[max(2rem,env(safe-area-inset-top))]">
+        <div class="rise">
+          <p class="mb-3 text-[11px] font-medium tracking-[0.28em] text-gold-light">ASAL RAJABI  ·  PMU ARTIST</p>
+          <h1 class="text-[1.85rem] font-extrabold leading-snug text-white sm:text-3xl">
+            عسل رجبی
+            <span class="mt-1 block text-lg font-medium text-gold-light">میکروبلیدینگ و شیدینگ لب</span>
+          </h1>
+          <div class="my-4 ornament"></div>
+          <p class="mb-7 max-w-xs text-[15px] font-light leading-8 text-cream/90">
+            قبل از رزرو، نتیجه کار رو روی صورت خودت ببین!
+          </p>
+          <a href="#services" class="gold-btn inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl text-[15px] font-bold">
+            تست مجازی و رزرو نوبت
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: SERVICES & UPLOAD -->
+    <section id="services" class="px-5 pb-4 pt-10">
+      <p class="text-center text-[11px] font-medium tracking-[0.22em] text-gold-deep">۰۱  ·  انتخاب خدمت</p>
+      <h2 class="mt-2 text-center text-xl font-extrabold text-brand-800">چه کاری مد نظرته؟</h2>
+      <p class="mx-auto mt-2 max-w-xs text-center text-sm font-light leading-7 text-brand-800/70">
+        اول خدمتت رو انتخاب کن، بعد یه سلفی واضح آپلود کن.
+      </p>
+
+      <div class="mt-6 grid grid-cols-3 gap-2.5" role="tablist">
+        <button type="button" data-service="brow" class="chip service-btn active rounded-2xl px-2 text-[13px] font-semibold">ابرو</button>
+        <button type="button" data-service="lip" class="chip service-btn rounded-2xl px-2 text-[13px] font-semibold">لب</button>
+        <button type="button" data-service="liner" class="chip service-btn rounded-2xl px-2 text-[13px] font-semibold">خط چشم</button>
+      </div>
+
+      <label id="dropzone" class="dropzone mt-6 flex cursor-pointer flex-col items-center justify-center rounded-3xl px-5 py-8">
+        <input id="fileInput" type="file" accept="image/*" class="hidden" />
+        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-brand-800 text-gold-light">
+          <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V8m0 0 3.5 3.5M12 8 8.5 11.5M4 16.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5M4 12l2.2-3.3A2 2 0 0 1 7.9 8h.6a2 2 0 0 0 1.6-.8l.4-.5" />
+          </svg>
+        </span>
+        <span class="mt-3 text-[15px] font-bold text-brand-800">آپلود سلفی</span>
+        <span class="mt-1 text-xs font-light text-brand-800/60">ضربه بزن یا تصویر را رها کن</span>
+      </label>
+
+      <p class="mt-6 text-center text-xs font-medium text-brand-800/55">یا با عکس نمونه تست کن</p>
+      <div class="mt-3 flex justify-center gap-3" id="presets">
+        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop&crop=faces&q=80">
+          <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&crop=faces&q=60" alt="نمونه ۱" class="h-full w-full object-cover" />
+        </button>
+        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&crop=faces&q=80">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&crop=faces&q=60" alt="نمونه ۲" class="h-full w-full object-cover" />
+        </button>
+        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&crop=faces&q=80">
+          <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&crop=faces&q=60" alt="نمونه ۳" class="h-full w-full object-cover" />
+        </button>
+      </div>
+    </section>
+
+    <!-- SECTION 3: MAGIC ROOM -->
+    <section id="magic" class="px-5 pb-6 pt-10">
+      <p class="text-center text-[11px] font-medium tracking-[0.22em] text-gold-deep">۰۲  ·  اتاق جادویی</p>
+      <h2 class="mt-2 text-center text-xl font-extrabold text-brand-800">قبل و بعد را مقایسه کن</h2>
+      <p class="mx-auto mt-2 max-w-xs text-center text-sm font-light leading-7 text-brand-800/70">
+        اسلایدر را بکش و مدل مورد علاقه‌ات را انتخاب کن.
+      </p>
+
+      <div class="relative mt-6 overflow-hidden rounded-3xl bg-brand-900">
+        <div id="placeholder" class="flex aspect-[3/4] flex-col items-center justify-center px-6 text-center">
+          <div class="spinner mb-4"></div>
+          <p id="placeholderText" class="text-sm font-light leading-7 text-cream/80">برای شروع، یک عکس انتخاب کن</p>
+        </div>
+
+        <div id="compare" class="relative hidden w-full">
+          <canvas id="afterCanvas" class="block w-full"></canvas>
+          <div id="beforeWrap" class="absolute inset-y-0 left-0 overflow-hidden" style="width:50%">
+            <canvas id="beforeCanvas" class="block max-w-none"></canvas>
+          </div>
+          <div id="sliderHandle" class="absolute inset-y-0 left-1/2 z-10 flex flex-col items-center justify-center">
+            <div class="handle-line absolute inset-y-0 left-1/2 -translate-x-1/2"></div>
+            <div class="handle-knob relative z-10 flex items-center justify-center rounded-full text-brand-800">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" d="M8 12H4m16 0h-4M8 12l-3-3m3 3-3 3M16 12l3-3m-3 3 3 3" />
+              </svg>
+            </div>
+          </div>
+          <span class="pointer-events-none absolute bottom-3 left-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] text-white">قبل</span>
+          <span class="pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] text-white">بعد</span>
+        </div>
+
+        <div id="processing" class="absolute inset-0 z-20 hidden items-center justify-center bg-brand-950/55 backdrop-blur-[2px]">
+          <div class="flex flex-col items-center">
+            <div class="spinner"></div>
+            <p class="mt-3 text-xs text-cream/90">در حال تشخیص چهره…</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="styleRow" class="mt-5 grid grid-cols-4 gap-2"></div>
+
+      <button id="wantThis" type="button" class="gold-btn mt-5 flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold opacity-50" disabled>
+        همین مدل رو میخوام! (رزرو نوبت)
+      </button>
+    </section>
+
+    <!-- SECTION 4: BOOKING -->
+    <section id="booking" class="px-5 pb-12 pt-8">
+      <p class="text-center text-[11px] font-medium tracking-[0.22em] text-gold-deep">۰۳  ·  رزرو نوبت</p>
+      <h2 class="mt-2 text-center text-xl font-extrabold text-brand-800">فرم رزرو</h2>
+      <p class="mx-auto mt-2 max-w-xs text-center text-sm font-light leading-7 text-brand-800/70">
+        مشخصاتت رو وارد کن تا مستقیم برات به واتساپ ارسال بشه.
+      </p>
+
+      <form id="bookForm" class="mt-6 space-y-3">
+        <div>
+          <label for="name" class="mb-1.5 block text-xs font-medium text-brand-800/70">نام و نام خانوادگی</label>
+          <input id="name" name="name" type="text" required autocomplete="name" class="field w-full rounded-2xl px-4 text-sm" placeholder="مثلاً سارا محمدی" />
+        </div>
+        <div>
+          <label for="phone" class="mb-1.5 block text-xs font-medium text-brand-800/70">شماره تماس</label>
+          <input id="phone" name="phone" type="tel" required inputmode="tel" autocomplete="tel" class="field w-full rounded-2xl px-4 text-sm" placeholder="0912xxxxxxx" />
+        </div>
+        <div>
+          <label for="serviceStyle" class="mb-1.5 block text-xs font-medium text-brand-800/70">خدمت و مدل</label>
+          <input id="serviceStyle" name="serviceStyle" type="text" required class="field w-full rounded-2xl px-4 text-sm" placeholder="ابرو — طبیعی" />
+        </div>
+        <div>
+          <label for="date" class="mb-1.5 block text-xs font-medium text-brand-800/70">تاریخ دلخواه</label>
+          <input id="date" name="date" type="date" required class="field w-full rounded-2xl px-4 text-sm" />
+        </div>
+        <button type="submit" class="gold-btn mt-2 flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold">
+          تایید و ارسال به واتساپ
+        </button>
+      </form>
+
+      <p class="mt-8 text-center text-[11px] font-light text-brand-800/45">عسل رجبی · میکروبلیدینگ و شیدینگ</p>
+    </section>
+  </div>
+
+  <script type="module">
+    import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/+esm";
+
+    const SERVICE_LABELS = { brow: "ابرو", lip: "لب", liner: "خط چشم" };
+    const STYLES = {
+      brow: [
+        { id: "natural", name: "طبیعی", color: "#5C4030", alpha: 0.40, inflate: 1.04 },
+        { id: "soft", name: "سافت", color: "#6B4F3A", alpha: 0.36, inflate: 1.08 },
+        { id: "defined", name: "حرفه‌ای", color: "#3A2418", alpha: 0.50, inflate: 1.10 },
+        { id: "bold", name: "پررنگ", color: "#24150E", alpha: 0.58, inflate: 1.16 }
+      ],
+      lip: [
+        { id: "nude", name: "نود", color: "#C9897B", alpha: 0.42 },
+        { id: "rose", name: "رزگلد", color: "#B76E79", alpha: 0.48 },
+        { id: "berry", name: "بری", color: "#8B3A4A", alpha: 0.52 },
+        { id: "bold", name: "قرمز", color: "#9B2335", alpha: 0.56 }
+      ],
+      liner: [
+        { id: "natural", name: "طبیعی", color: "#3D2B1F", width: 1.5, wing: 0, smudge: false },
+        { id: "soft", name: "اسموکی", color: "#2C2118", width: 2.3, wing: 0.4, smudge: true },
+        { id: "classic", name: "کلاسیک", color: "#14110E", width: 2.1, wing: 1.15, smudge: false },
+        { id: "bold", name: "گربه‌ای", color: "#0A0908", width: 2.7, wing: 1.55, smudge: false }
+      ]
+    };
+
+    const LIP_OUTER = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 181, 91, 146];
+    const LIP_INNER = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
+    const LEFT_BROW = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
+    const RIGHT_BROW = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
+    const LEFT_LASH = [33, 246, 161, 160, 159, 158, 157, 173, 133];
+    const RIGHT_LASH = [263, 466, 388, 387, 386, 385, 384, 398, 362];
+    const LEFT_IRIS = 468;
+    const RIGHT_IRIS = 473;
+
+    const state = {
+      service: "brow",
+      styleId: "natural",
+      image: null,
+      landmarks: null,
+      displayW: 0,
+      displayH: 0,
+      split: 0.5,
+      ready: false
+    };
+
+    let landmarker = null;
+    let landmarkerPromise = null;
+
+    const els = {
+      serviceBtns: document.querySelectorAll(".service-btn"),
+      fileInput: document.getElementById("fileInput"),
+      dropzone: document.getElementById("dropzone"),
+      placeholder: document.getElementById("placeholder"),
+      placeholderText: document.getElementById("placeholderText"),
+      compare: document.getElementById("compare"),
+      beforeWrap: document.getElementById("beforeWrap"),
+      beforeCanvas: document.getElementById("beforeCanvas"),
+      afterCanvas: document.getElementById("afterCanvas"),
+      sliderHandle: document.getElementById("sliderHandle"),
+      processing: document.getElementById("processing"),
+      styleRow: document.getElementById("styleRow"),
+      wantThis: document.getElementById("wantThis"),
+      serviceStyle: document.getElementById("serviceStyle"),
+      bookForm: document.getElementById("bookForm"),
+      date: document.getElementById("date")
+    };
+
+    els.date.min = new Date().toISOString().split("T")[0];
+    renderStyles();
+    syncServiceField();
+
+    function currentStyle() {
+      return STYLES[state.service].find((s) => s.id === state.styleId) || STYLES[state.service][0];
+    }
+
+    function syncServiceField() {
+      const style = currentStyle();
+      els.serviceStyle.value = `${SERVICE_LABELS[state.service]} — ${style.name}`;
+    }
+
+    function renderStyles() {
+      const list = STYLES[state.service];
+      if (!list.some((s) => s.id === state.styleId)) state.styleId = list[0].id;
+      els.styleRow.innerHTML = list.map((s) => `
+        <button type="button" data-style="${s.id}"
+          class="style-chip chip rounded-2xl px-1 text-[11px] font-semibold ${s.id === state.styleId ? "active" : ""}">
+          ${s.name}
+        </button>`).join("");
+      els.styleRow.querySelectorAll(".style-chip").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.styleId = btn.dataset.style;
+          renderStyles();
+          syncServiceField();
+          if (state.landmarks) drawAll();
+        });
+      });
+    }
+
+    els.serviceBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.service = btn.dataset.service;
+        els.serviceBtns.forEach((b) => b.classList.toggle("active", b === btn));
+        renderStyles();
+        syncServiceField();
+        if (state.landmarks) drawAll();
+      });
+    });
+
+    function initLandmarker() {
+      if (landmarkerPromise) return landmarkerPromise;
+      landmarkerPromise = (async () => {
+        const wasm = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/wasm";
+        const model = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+        const vision = await FilesetResolver.forVisionTasks(wasm);
+        const options = (delegate) => ({
+          baseOptions: { modelAssetPath: model, delegate },
+          runningMode: "IMAGE",
+          numFaces: 1
+        });
+        try {
+          landmarker = await FaceLandmarker.createFromOptions(vision, options("GPU"));
+        } catch {
+          landmarker = await FaceLandmarker.createFromOptions(vision, options("CPU"));
+        }
+        state.ready = true;
+        if (!state.image) {
+          els.placeholder.querySelector(".spinner")?.classList.add("hidden");
+          els.placeholderText.textContent = "برای شروع، یک عکس انتخاب کن";
+        }
+        return landmarker;
+      })();
+      return landmarkerPromise;
+    }
+    initLandmarker();
+
+    function loadImage(src, needsCORS = true) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        if (needsCORS) img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("بارگذاری تصویر ناموفق بود"));
+        img.src = src;
+      });
+    }
+
+    async function processImage(img) {
+      state.image = img;
+      state.landmarks = null;
+      els.wantThis.disabled = true;
+      els.wantThis.classList.add("opacity-50");
+      els.placeholder.classList.add("hidden");
+      els.compare.classList.remove("hidden");
+      els.processing.classList.remove("hidden");
+      els.processing.classList.add("flex");
+      layoutCanvases();
+      drawOriginalOnly();
+
+      try {
+        await initLandmarker();
+        const result = landmarker.detect(img);
+        const face = result.faceLandmarks && result.faceLandmarks[0];
+        if (!face) {
+          els.placeholderText.textContent = "چهره‌ای پیدا نشد. لطفاً عکس واضح‌تری از روبه‌رو انتخاب کن.";
+          els.placeholder.classList.remove("hidden");
+          els.placeholder.querySelector(".spinner")?.classList.add("hidden");
+          els.compare.classList.add("hidden");
+          return;
+        }
+        state.landmarks = face;
+        drawAll();
+        els.wantThis.disabled = false;
+        els.wantThis.classList.remove("opacity-50");
+        document.getElementById("magic").scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (err) {
+        console.error(err);
+        els.placeholderText.textContent = "خطا در پردازش تصویر. دوباره تلاش کن.";
+        els.placeholder.classList.remove("hidden");
+        els.compare.classList.add("hidden");
+      } finally {
+        els.processing.classList.add("hidden");
+        els.processing.classList.remove("flex");
+      }
+    }
+
+    function layoutCanvases() {
+      const img = state.image;
+      if (!img) return;
+      const container = els.compare.parentElement;
+      const maxW = container.clientWidth;
+      const aspect = img.naturalWidth / img.naturalHeight;
+      state.displayW = maxW;
+      state.displayH = Math.round(maxW / aspect);
+      setupCanvas(els.afterCanvas, state.displayW, state.displayH);
+      setupCanvas(els.beforeCanvas, state.displayW, state.displayH);
+      els.beforeCanvas.style.width = state.displayW + "px";
+      els.beforeCanvas.style.height = state.displayH + "px";
+      applySplit(state.split);
+    }
+
+    function setupCanvas(canvas, w, h) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      return ctx;
+    }
+
+    function ctx2d(canvas) {
+      const ctx = canvas.getContext("2d");
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      return ctx;
+    }
+
+    function drawOriginalOnly() {
+      const img = state.image;
+      const w = state.displayW, h = state.displayH;
+      const a = ctx2d(els.afterCanvas);
+      const b = ctx2d(els.beforeCanvas);
+      a.clearRect(0, 0, w, h);
+      b.clearRect(0, 0, w, h);
+      a.drawImage(img, 0, 0, w, h);
+      b.drawImage(img, 0, 0, w, h);
+    }
+
+    function drawAll() {
+      drawOriginalOnly();
+      const ctx = ctx2d(els.afterCanvas);
+      paintMakeup(ctx, state.landmarks, state.displayW, state.displayH, state.service, currentStyle());
+    }
+
+    function pts(landmarks, indices, w, h) {
+      return indices.map((i) => ({ x: landmarks[i].x * w, y: landmarks[i].y * h }));
+    }
+
+    function pt(landmarks, i, w, h) {
+      return { x: landmarks[i].x * w, y: landmarks[i].y * h };
+    }
+
+    function addSmooth(ctx, points, closed = true) {
+      if (points.length < 2) return;
+      ctx.moveTo(points[0].x, points[0].y);
+      if (points.length === 2) {
+        ctx.lineTo(points[1].x, points[1].y);
+      } else {
+        for (let i = 0; i < points.length - 1; i++) {
+          const p0 = points[i];
+          const p1 = points[i + 1];
+          const mx = (p0.x + p1.x) / 2;
+          const my = (p0.y + p1.y) / 2;
+          ctx.quadraticCurveTo(p0.x, p0.y, mx, my);
+        }
+        const last = points[points.length - 1];
+        if (closed) {
+          const first = points[0];
+          ctx.quadraticCurveTo(last.x, last.y, (last.x + first.x) / 2, (last.y + first.y) / 2);
+          ctx.quadraticCurveTo(first.x, first.y, first.x, first.y);
+          ctx.closePath();
+        } else {
+          ctx.lineTo(last.x, last.y);
+        }
+      }
+    }
+
+    function smoothPath(ctx, points, closed = true) {
+      ctx.beginPath();
+      addSmooth(ctx, points, closed);
+    }
+
+    function inflate(points, scale) {
+      let cx = 0, cy = 0;
+      for (const p of points) { cx += p.x; cy += p.y; }
+      cx /= points.length; cy /= points.length;
+      return points.map((p) => ({
+        x: cx + (p.x - cx) * scale,
+        y: cy + (p.y - cy) * scale
+      }));
+    }
+
+    function offsetAway(points, origin, amount) {
+      return points.map((p) => {
+        const dx = p.x - origin.x;
+        const dy = p.y - origin.y;
+        const len = Math.hypot(dx, dy) || 1;
+        return { x: p.x + (dx / len) * amount, y: p.y + (dy / len) * amount };
+      });
+    }
+
+    function paintMakeup(ctx, lm, w, h, service, style) {
+      if (service === "brow") drawBrows(ctx, lm, w, h, style);
+      else if (service === "lip") drawLips(ctx, lm, w, h, style);
+      else drawLiner(ctx, lm, w, h, style);
+    }
+
+    function drawBrows(ctx, lm, w, h, style) {
+      const left = inflate(pts(lm, LEFT_BROW, w, h), style.inflate);
+      const right = inflate(pts(lm, RIGHT_BROW, w, h), style.inflate);
+      ctx.save();
+      ctx.globalCompositeOperation = "multiply";
+      ctx.fillStyle = style.color;
+      ctx.globalAlpha = style.alpha;
+      ctx.shadowColor = style.color;
+      ctx.shadowBlur = 6;
+      smoothPath(ctx, left, true);
+      ctx.fill();
+      smoothPath(ctx, right, true);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalCompositeOperation = "soft-light";
+      ctx.globalAlpha = 0.28;
+      ctx.fillStyle = "#3a2a20";
+      smoothPath(ctx, inflate(left, 0.92), true);
+      ctx.fill();
+      smoothPath(ctx, inflate(right, 0.92), true);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawLips(ctx, lm, w, h, style) {
+      const outer = pts(lm, LIP_OUTER, w, h);
+      const inner = pts(lm, LIP_INNER, w, h);
+
+      ctx.save();
+      ctx.globalCompositeOperation = "multiply";
+      ctx.fillStyle = style.color;
+      ctx.globalAlpha = style.alpha;
+      ctx.beginPath();
+      addSmooth(ctx, outer, true);
+      addSmooth(ctx, inner, true);
+      ctx.fill("evenodd");
+      ctx.restore();
+
+      const upper = pts(lm, [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291], w, h);
+      ctx.save();
+      ctx.globalCompositeOperation = "soft-light";
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = "#fff5f0";
+      smoothPath(ctx, upper, true);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalCompositeOperation = "multiply";
+      ctx.strokeStyle = style.color;
+      ctx.globalAlpha = Math.min(0.55, style.alpha + 0.08);
+      ctx.lineWidth = Math.max(1.1, w * 0.003);
+      ctx.lineJoin = "round";
+      smoothPath(ctx, outer, true);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawEye(ctx, lash, iris, style, w, outerIsFirst) {
+      const band = Math.max(1.2, style.width * (w / 420));
+      const outer = offsetAway(lash, iris, band * 1.15);
+      const wingLen = style.wing * (w * 0.028);
+      let wing = [];
+      if (wingLen > 0) {
+        const a = lash[0];
+        const b = lash[1];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const ux = dx / len, uy = dy / len;
+        const up = outerIsFirst ? -0.55 : -0.55;
+        wing = [
+          { x: a.x + ux * wingLen, y: a.y + uy * wingLen + up * wingLen * 0.35 },
+          { x: a.x + ux * wingLen * 0.35, y: a.y + uy * wingLen * 0.2 - band * 0.6 }
+        ];
+      }
+
+      const poly = [...lash, ...(wing.length ? [wing[0]] : []), ...outer.slice().reverse()];
+      ctx.save();
+      ctx.globalCompositeOperation = "multiply";
+      ctx.fillStyle = style.color;
+      ctx.globalAlpha = style.smudge ? 0.42 : 0.62;
+      if (style.smudge) {
+        ctx.shadowColor = style.color;
+        ctx.shadowBlur = 8;
+      }
+      smoothPath(ctx, poly, true);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalCompositeOperation = "multiply";
+      ctx.strokeStyle = style.color;
+      ctx.globalAlpha = 0.75;
+      ctx.lineWidth = Math.max(0.8, band * 0.45);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      smoothPath(ctx, lash, false);
+      if (wing.length) ctx.lineTo(wing[0].x, wing[0].y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawLiner(ctx, lm, w, h, style) {
+      const left = pts(lm, LEFT_LASH, w, h);
+      const right = pts(lm, RIGHT_LASH, w, h);
+      const li = pt(lm, LEFT_IRIS, w, h);
+      const ri = pt(lm, RIGHT_IRIS, w, h);
+      drawEye(ctx, left, li, style, w, true);
+      drawEye(ctx, right, ri, style, w, true);
+    }
+
+    function applySplit(t) {
+      state.split = Math.min(0.92, Math.max(0.08, t));
+      const pct = state.split * 100;
+      els.beforeWrap.style.width = pct + "%";
+      els.sliderHandle.style.left = pct + "%";
+    }
+
+    function pointerToSplit(clientX) {
+      const rect = els.compare.getBoundingClientRect();
+      return (clientX - rect.left) / rect.width;
+    }
+
+    let dragging = false;
+    const startDrag = (e) => {
+      dragging = true;
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      applySplit(pointerToSplit(x));
+    };
+    const moveDrag = (e) => {
+      if (!dragging) return;
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      applySplit(pointerToSplit(x));
+      e.preventDefault();
+    };
+    const endDrag = () => { dragging = false; };
+
+    els.compare.addEventListener("pointerdown", (e) => { els.compare.setPointerCapture(e.pointerId); startDrag(e); });
+    els.compare.addEventListener("pointermove", moveDrag);
+    els.compare.addEventListener("pointerup", endDrag);
+    els.compare.addEventListener("pointercancel", endDrag);
+
+    els.fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      try {
+        const img = await loadImage(url, false);
+        await processImage(img);
+      } finally {
+        URL.revokeObjectURL(url);
+        els.fileInput.value = "";
+      }
+    });
+
+    ["dragenter", "dragover"].forEach((ev) => {
+      els.dropzone.addEventListener(ev, (e) => { e.preventDefault(); els.dropzone.classList.add("dragover"); });
+    });
+    ["dragleave", "drop"].forEach((ev) => {
+      els.dropzone.addEventListener(ev, (e) => { e.preventDefault(); els.dropzone.classList.remove("dragover"); });
+    });
+    els.dropzone.addEventListener("drop", async (e) => {
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file || !file.type.startsWith("image/")) return;
+      const url = URL.createObjectURL(file);
+      try {
+        const img = await loadImage(url, false);
+        await processImage(img);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    });
+
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        try {
+          const img = await loadImage(btn.dataset.src, true);
+          await processImage(img);
+        } catch (err) {
+          console.error(err);
+          els.placeholderText.textContent = "بارگذاری عکس نمونه ناموفق بود.";
+        }
+      });
+    });
+
+    els.wantThis.addEventListener("click", () => {
+      syncServiceField();
+      document.getElementById("booking").scrollIntoView({ behavior: "smooth" });
+    });
+
+    els.bookForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const serviceStyle = els.serviceStyle.value.trim();
+      const date = document.getElementById("date").value;
+      const prettyDate = date ? new Date(date + "T00:00:00").toLocaleDateString("fa-IR") : date;
+      const message =
+        `سلام عسل جان 🌿\n` +
+        `می‌خوام نوبت رزرو کنم.\n\n` +
+        `نام: ${name}\n` +
+        `شماره: ${phone}\n` +
+        `خدمات: ${serviceStyle}\n` +
+        `تاریخ دلخواه: ${prettyDate}`;
+      const url = `https://wa.me/989150000000?text=${encodeURIComponent(message)}`;
+      window.location.href = url;
+    });
+
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!state.image) return;
+        layoutCanvases();
+        if (state.landmarks) drawAll();
+        else drawOriginalOnly();
+      }, 120);
+    });
+  </script>
+</body>
+</html>
