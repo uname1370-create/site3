@@ -19,6 +19,20 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# virtual machine crash logs
 hs_err_pid*
 replay_pid*
+
+# Next.js
+.next/
+out/
+build/
+dist/
+node_modules/
+.env
+.env.local
+.vercel
+
+# misc
+.DS_Store
+*.pem
