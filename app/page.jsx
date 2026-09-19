@@ -144,7 +144,7 @@ export default function Page(){
   return (
     <div className="min-h-screen bg-[#FDFCFB]">
       {/* header */}
-      <header className="fixed top-0 inset-x-0 z-40 bg-[#FDFCFB]/75 backdrop-blur-[10px] border-b hairline">
+      <header className="fixed top-0 inset-x-0 z-40 bg-white/92 backdrop-blur-[12px] border-b border-black/[0.06] shadow-[0_1px_12px_rgba(15,61,46,0.04)]">
         <nav className="max-w-[1080px] mx-auto px-6 h-[56px] flex items-center justify-between">
           <a href="#" className="flex items-center gap-2.5">
             <span className="w-7 h-7 rounded-full border hairline flex items-center justify-center text-[13px] font-serif text-pmu-green">ع</span>
@@ -153,48 +153,60 @@ export default function Page(){
               <span className="block text-[8px] tracking-[0.20em] text-black/35 -mt-0.5">PMU ATELIER</span>
             </span>
           </a>
-          <div className="hidden md:flex items-center gap-7 text-[10.5px] tracking-[0.14em] font-extralight">
-            <a href="#upload" className="text-black/40 hover:text-pmu-green transition">تست مجازی</a>
-            <a href="#services" className="text-black/40 hover:text-pmu-green transition">خدمات</a>
-            <a href="#booking" className="text-black/40 hover:text-pmu-green transition">رزرو</a>
-            <a href="https://instagram.com/asalrajabi_pmu" target="_blank" className="text-black/25 hover:text-pmu-green transition">@asalrajabi_pmu</a>
+          <div className="hidden md:flex items-center gap-7 text-[10.5px] tracking-[0.14em] font-light">
+            <a href="#upload" className="text-pmu-green/70 hover:text-pmu-green transition">تست مجازی</a>
+            <a href="#services" className="text-pmu-green/70 hover:text-pmu-green transition">خدمات</a>
+            <a href="#booking" className="text-pmu-green/70 hover:text-pmu-green transition">رزرو</a>
+            <a href="https://instagram.com/asalrajabi_pmu" target="_blank" className="text-pmu-green/50 hover:text-pmu-green transition">@asalrajabi_pmu</a>
           </div>
           <a href="#upload" className="hidden md:inline-flex text-[10px] tracking-[0.14em] font-light text-pmu-green border hairline-strong px-5 py-2 rounded-full hover:bg-pmu-green hover:text-white hover:border-pmu-green transition">شروع تست</a>
         </nav>
       </header>
 
-      {/* hero simple royal */}
-      <section className="bg-[#FDFCFB] pt-[112px] pb-16 sm:pt-[132px] sm:pb-20">
-        <div className="max-w-[760px] mx-auto px-6 text-center">
-          <motion.p initial={{opacity:0, y:8}} animate={{opacity:1,y:0}} transition={{delay:0.1}} className="inline-flex items-center gap-2 text-[9px] tracking-[0.24em] text-black/30 border hairline rounded-full px-4 py-1.5">LUXURY PMU — TEHRAN • MASHHAD</motion.p>
-          <motion.h1 initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.2}} className="mt-10 font-serif leading-[1.05] tracking-[-0.035em] text-pmu-green">
-            <span className="block text-[38px] sm:text-[52px]">قبل از رزرو،</span>
-            <span className="block text-[38px] sm:text-[52px] mt-1">ببین چه مدلی</span>
-            <span className="block text-[34px] sm:text-[48px] italic text-black/45 mt-2 tracking-[-0.02em]">به صورتت میاد</span>
-          </motion.h1>
-          <motion.p initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.35}} className="mt-8 text-[13px] leading-7 font-extralight text-black/40 max-w-[480px] mx-auto">
-            پیش‌نمایش <span className="text-pmu-green font-light">مات و طبیعی</span> — میکروبلیدینگ، شیدینگ لب و بن‌مژه روی چهره‌ی خودت.<br className="hidden sm:block"/> 3D Face Mesh 468 نقطه + WebGL PBR
-          </motion.p>
-          <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.5}} className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="#upload" className="inline-flex items-center justify-center gap-2 bg-pmu-green text-white px-8 py-3.5 rounded-full text-[11px] tracking-[0.14em] font-light hover:bg-black transition">شروع تست — رایگان <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-            <a href="#services" className="inline-flex items-center justify-center text-pmu-green border hairline-strong px-7 py-3.5 rounded-full text-[11px] tracking-[0.14em] font-extralight hover:bg-white transition">نمونه‌کارها</a>
-          </motion.div>
-          <p className="mt-8 text-[10px] tracking-[0.16em] text-black/25 font-extralight">٦۰fps • PBR • Teeth Stencil • 468 landmarks</p>
+      {/* hero — immersive luxury dark, high contrast, enterprise */}
+      <section className="relative min-h-[88vh] flex items-center overflow-hidden bg-[#0A1F17]">
+        <div className="absolute inset-0">
+          <img src="https://raw.githubusercontent.com/uname1370-create/site3/main/asalrajabi.png" alt="Asal Rajabi" className="w-full h-full object-cover object-[center_28%] sm:object-[center_22%]" onError={e=>e.target.style.display='none'} />
+          <div className="absolute inset-0" style={{background: 'linear-gradient(to left, rgba(10,31,23,0.92) 0%, rgba(10,31,23,0.72) 32%, rgba(10,31,23,0.38) 58%, rgba(10,31,23,0.12) 78%, transparent 100%)'}}></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1F17]/60 via-transparent to-transparent"></div>
+        </div>
+        <div className="relative w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-20">
+          <div className="max-w-[560px] mr-auto lg:mr-0 text-center lg:text-right">
+            <motion.p initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:0.15}} className="inline-flex items-center gap-2 text-[9px] tracking-[0.26em] text-white/70 border border-white/15 rounded-full px-4 py-1.5 backdrop-blur bg-white/[0.06]">LUXURY PMU — TEHRAN • MASHHAD</motion.p>
+            <motion.h1 initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} transition={{delay:0.25}} className="mt-8 font-serif leading-[1.02] tracking-[-0.035em] text-white">
+              <span className="block text-[40px] sm:text-[54px] font-light">قبل از رزرو،</span>
+              <span className="block text-[40px] sm:text-[54px] font-light mt-1">ببین چه مدلی</span>
+              <span className="block text-[36px] sm:text-[50px] italic font-light text-white/90 mt-2 tracking-[-0.02em]">به صورتت میاد</span>
+            </motion.h1>
+            <motion.p initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.4}} className="mt-6 text-[13.5px] leading-[1.95] font-light text-white/75 max-w-[500px] mx-auto lg:mx-0">
+              پیش‌نمایش <span className="text-white font-normal">مات و طبیعی</span> — میکروبلیدینگ، شیدینگ لب و بن‌مژه روی چهره‌ی خودت.<br className="hidden sm:block"/> <span className="text-white/60 text-[12px] tracking-wide">3D Face Mesh 468 نقطه • WebGL PBR • 60fps</span>
+            </motion.p>
+            <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:0.55}} className="mt-10 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <a href="#upload" className="inline-flex items-center justify-center gap-2 bg-white text-pmu-green px-8 py-4 rounded-full text-[11px] tracking-[0.14em] font-medium hover:bg-white/90 transition shadow-[0_8px_32px_rgba(0,0,0,0.18)]">شروع تست — رایگان <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+              <a href="#services" className="inline-flex items-center justify-center gap-2 text-white border border-white/20 bg-white/[0.06] backdrop-blur px-7 py-4 rounded-full text-[11px] tracking-[0.14em] font-light hover:bg-white/10 transition">نمونه‌کارها</a>
+            </motion.div>
+            <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.7}} className="mt-12 flex items-center justify-center lg:justify-start gap-3 text-[10px] tracking-[0.16em] font-light text-white/40">
+              <span className="w-8 h-px bg-white/20"></span><span>۱۲۰۰+ تست • ۴.۹/۵ رضایت</span><span className="w-8 h-px bg-white/20"></span>
+            </motion.div>
+          </div>
+        </div>
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          <span className="text-[9px] tracking-[0.22em] text-white/30 font-light">SCROLL</span><div className="w-px h-8 bg-gradient-to-b from-white/30 to-transparent"></div>
         </div>
       </section>
 
       {/* stepper */}
-      <div className="sticky top-[56px] z-30 bg-[#FDFCFB]/85 backdrop-blur-[8px] border-y hairline">
-        <div className="max-w-[1080px] mx-auto px-6 py-3.5 flex items-center justify-between gap-2 text-[10px] tracking-[0.12em] font-extralight overflow-x-auto no-scrollbar">
-          <a href="#upload" className={`flex items-center gap-2 whitespace-nowrap ${!imageSrc ? 'text-pmu-green' : 'text-black/30'}`}><span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[9px] ${!imageSrc ? 'border-pmu-green text-pmu-green' : 'hairline'}`}>۰۱</span> عکس</a>
+      <div className="sticky top-[56px] z-30 bg-white/90 backdrop-blur-[10px] border-y border-black/[0.07] shadow-[0_2px_12px_rgba(15,61,46,0.04)]">
+        <div className="max-w-[1080px] mx-auto px-6 py-3.5 flex items-center justify-between gap-2 text-[10px] tracking-[0.12em] font-light overflow-x-auto no-scrollbar">
+          <a href="#upload" className={`flex items-center gap-2 whitespace-nowrap ${!imageSrc ? 'text-pmu-green' : 'text-black/60'}`}><span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[9px] ${!imageSrc ? 'border-pmu-green text-pmu-green' : 'hairline'}`}>۰۱</span> عکس</a>
           <span className="h-px flex-1 bg-black/5 hidden sm:block" />
-          <a href="#services" className={`flex items-center gap-2 whitespace-nowrap ${imageSrc && !activeService ? 'text-pmu-green' : 'text-black/30'}`}><span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[9px] ${imageSrc && !activeService ? 'border-pmu-green text-pmu-green' : 'hairline'}`}>۰۲</span> خدمت</a>
+          <a href="#services" className={`flex items-center gap-2 whitespace-nowrap ${imageSrc && !activeService ? 'text-pmu-green' : 'text-black/60'}`}><span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[9px] ${imageSrc && !activeService ? 'border-pmu-green text-pmu-green' : 'hairline'}`}>۰۲</span> خدمت</a>
           <span className="h-px flex-1 bg-black/5 hidden sm:block" />
-          <a href="#canvas" className={`flex items-center gap-2 whitespace-nowrap ${activeService ? 'text-pmu-green' : 'text-black/30'}`}><span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[9px] ${activeService ? 'border-pmu-green text-pmu-green' : 'hairline'}`}>۰۳</span> 3D</a>
+          <a href="#canvas" className={`flex items-center gap-2 whitespace-nowrap ${activeService ? 'text-pmu-green' : 'text-black/60'}`}><span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[9px] ${activeService ? 'border-pmu-green text-pmu-green' : 'hairline'}`}>۰۳</span> 3D</a>
           <span className="h-px flex-1 bg-black/5 hidden sm:block" />
-          <a href="#compare" className="flex items-center gap-2 whitespace-nowrap text-black/30"><span className="w-5 h-5 rounded-full border hairline flex items-center justify-center text-[9px]">۰۴</span> مقایسه</a>
+          <a href="#compare" className="flex items-center gap-2 whitespace-nowrap text-black/60"><span className="w-5 h-5 rounded-full border hairline flex items-center justify-center text-[9px]">۰۴</span> مقایسه</a>
           <span className="h-px flex-1 bg-black/5 hidden sm:block" />
-          <a href="#booking" className="flex items-center gap-2 whitespace-nowrap text-black/30"><span className="w-5 h-5 rounded-full border hairline flex items-center justify-center text-[9px]">۰۵</span> رزرو</a>
+          <a href="#booking" className="flex items-center gap-2 whitespace-nowrap text-black/60"><span className="w-5 h-5 rounded-full border hairline flex items-center justify-center text-[9px]">۰۵</span> رزرو</a>
         </div>
       </div>
 
@@ -202,9 +214,9 @@ export default function Page(){
       <section id="upload" className="bg-white border-b hairline py-14 sm:py-16">
         <div className="max-w-[1080px] mx-auto px-6">
           <div className="max-w-xl">
-            <p className="text-[10px] tracking-[0.20em] text-black/30">۰۱ — انتخاب عکس • ماکرو</p>
+            <p className="text-[10px] tracking-[0.20em] text-black/60">۰۱ — انتخاب عکس • ماکرو</p>
             <h2 className="mt-3 font-serif text-[26px] sm:text-[30px] tracking-[-0.03em] text-pmu-green">عکس‌ات رو انتخاب کن</h2>
-            <p className="mt-2 text-[12.5px] leading-6 font-extralight text-black/40">نور طبیعی، روبه‌رو، بدون فیلتر — فقط فیس، هیچ آرایشی روی صورت نباشد.</p>
+            <p className="mt-2 text-[12.5px] leading-6 font-light text-black/65">نور طبیعی، روبه‌رو، بدون فیلتر — فقط فیس، هیچ آرایشی روی صورت نباشد.</p>
           </div>
 
           <div className="mt-8 grid lg:grid-cols-[1.15fr_0.85fr] gap-8 items-start">
@@ -226,7 +238,7 @@ export default function Page(){
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 </span>
                 <p className="text-[11px] tracking-wide font-light text-pmu-green">بکش و رها کن یا کلیک کن</p>
-                <p className="text-[10.5px] font-extralight text-black/30 -mt-1">چهره کاملا رو به دوربین</p>
+                <p className="text-[10.5px] font-light text-black/60 -mt-1">چهره کاملا رو به دوربین</p>
                 <span className="mt-3 inline-flex bg-pmu-green text-white px-5 py-2 rounded-full text-[10.5px] tracking-wide font-light">انتخاب از گالری</span>
                 <input id="fileInput" type="file" accept="image/*" className="hidden" onChange={e=> handleFile(e.target.files[0])} />
               </label>
@@ -245,7 +257,7 @@ export default function Page(){
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 text-[10px] text-center font-extralight text-black/25">فقط فیس — بدون آرایش، بدون شانه</p>
+                <p className="mt-2 text-[10px] text-center font-light text-black/25">فقط فیس — بدون آرایش، بدون شانه</p>
               </div>
             </div>
 
@@ -253,7 +265,7 @@ export default function Page(){
             <div className="lg:sticky lg:top-[104px]">
               <div className="rounded-[24px] border hairline bg-white p-6">
                 <h3 className="text-[10px] tracking-[0.14em] font-light text-pmu-green">پیش‌نمایش — فیس</h3>
-                <p className="mt-1 text-[11px] leading-5 font-extralight text-black/35">قاب دایره‌ای — ۱۰۰٪ فوکوس روی صورت</p>
+                <p className="mt-1 text-[11px] leading-5 font-light text-black/60">قاب دایره‌ای — ۱۰۰٪ فوکوس روی صورت</p>
                 <div className="mt-6 relative mx-auto w-[200px] h-[200px] sm:w-[220px] sm:h-[220px]">
                   <div className="absolute inset-0 rounded-full p-[1px] bg-black/5">
                     <div className="w-full h-full rounded-full bg-[#FDFCFB] overflow-hidden relative flex items-center justify-center border border-white">
@@ -261,10 +273,10 @@ export default function Page(){
                         <img src={imageSrc} alt="preview" className="w-full h-full object-cover object-center scale-[1.14]" />
                       ) : (
                         <div className="text-center p-5">
-                          <div className="w-10 h-10 mx-auto rounded-full border hairline flex items-center justify-center text-black/15">
+                          <div className="w-10 h-10 mx-auto rounded-full border hairline flex items-center justify-center text-black/30">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="12" cy="10" r="2.4"/><path d="M7 18c1.4-1.8 3.6-2.7 5-2.7s3.6 0.9 5 2.7"/></svg>
                           </div>
-                          <p className="mt-2 text-[11px] font-extralight text-black/30">هنوز عکسی نیست</p>
+                          <p className="mt-2 text-[11px] font-light text-black/60">هنوز عکسی نیست</p>
                         </div>
                       )}
                     </div>
@@ -272,7 +284,7 @@ export default function Page(){
                   {faceDetected && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-pmu-green text-white text-[10px] px-3 py-1 rounded-full">✓ 468 detected</span>}
                 </div>
                 <div className="mt-6 flex items-center justify-between text-[10px] tracking-wide">
-                  <span className="text-black/30">وضعیت</span>
+                  <span className="text-black/60">وضعیت</span>
                   <span className={`px-2.5 py-1 rounded-full border text-[10px] ${faceDetected ? 'bg-pmu-green text-white border-pmu-green' : 'bg-[#FDFCFB] hairline text-black/40'}`}>{faceDetected ? 'چهره شناسایی شد • 468' : '—'}</span>
                 </div>
               </div>
@@ -284,9 +296,9 @@ export default function Page(){
       {/* 02 services */}
       <section id="services" className="bg-[#FDFCFB] py-14 sm:py-16">
         <div className="max-w-[1080px] mx-auto px-6">
-          <p className="text-[10px] tracking-[0.20em] text-black/30">۰۲ — یک خدمت انتخاب کن</p>
+          <p className="text-[10px] tracking-[0.20em] text-black/60">۰۲ — یک خدمت انتخاب کن</p>
           <h2 className="mt-3 font-serif text-[26px] sm:text-[30px] tracking-[-0.03em] text-pmu-green">کدام خدمت؟</h2>
-          <p className="mt-2 text-[12.5px] leading-6 font-extralight text-black/40">زوم سینماتیک خودکار — هر خدمت نمای ماکرو اختصاصی</p>
+          <p className="mt-2 text-[12.5px] leading-6 font-light text-black/65">زوم سینماتیک خودکار — هر خدمت نمای ماکرو اختصاصی</p>
 
           <div className="mt-8 grid md:grid-cols-3 gap-5">
             {[
@@ -296,8 +308,8 @@ export default function Page(){
             ].map(s=>(
               <button key={s.id} onClick={()=>{ setActiveService(s.id); setActiveIdx(0); document.getElementById('canvas')?.scrollIntoView({behavior:'smooth'}) }} className={`group text-right bg-white border rounded-[20px] p-7 text-right transition ${activeService===s.id ? 'border-pmu-green/20 bg-white shadow-[0_8px_32px_rgba(15,61,46,0.06)]' : 'hairline hover:border-black/12'}`}>
                 <h3 className="font-serif text-[17px] text-pmu-green">{s.title}</h3>
-                <p className="text-[10px] tracking-[0.14em] text-black/30">{s.en}</p>
-                <p className="mt-2 text-[12.5px] leading-6 font-extralight text-black/45">{s.desc}</p>
+                <p className="text-[10px] tracking-[0.14em] text-black/60">{s.en}</p>
+                <p className="mt-2 text-[12.5px] leading-6 font-light text-black/70">{s.desc}</p>
                 <span className={`mt-4 inline-flex text-[10px] tracking-wide font-light border px-3 py-1.5 rounded-full transition ${activeService===s.id ? 'bg-pmu-green text-white border-pmu-green' : 'text-pmu-green hairline'}`}>انتخاب →</span>
               </button>
             ))}
@@ -310,17 +322,17 @@ export default function Page(){
         <div className="max-w-[1080px] mx-auto px-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] tracking-[0.18em] text-black/30">۰۳ — تست زنده • 3D WebGL • 60fps</p>
+              <p className="text-[10px] tracking-[0.18em] text-black/60">۰۳ — تست زنده • 3D WebGL • 60fps</p>
               <h2 className="mt-2 font-serif text-[22px] tracking-[-0.02em] text-pmu-green flex items-center gap-2">
                 {activeService ? ({brows:'تست ابرو', lips:'تست لب', eyeliner:'تست بن‌مژه'}[activeService]) : 'تست سه‌بعدی'}
-                <span className="text-[10px] tracking-wide font-extralight border hairline px-2.5 py-1 rounded-full text-black/40">{styles.length} استایل</span>
+                <span className="text-[10px] tracking-wide font-light border hairline px-2.5 py-1 rounded-full text-black/40">{styles.length} استایل</span>
               </h2>
-              <p className="text-[11.5px] font-extralight text-black/35 mt-1">
+              <p className="text-[11.5px] font-light text-black/60 mt-1">
                 {activeService==='brows' ? 'زوم بالا — ابرو ۷۵٪ کادر' : activeService==='lips' ? 'ماکرو لب — PBR soft-light' : activeService==='eyeliner' ? 'ماکرو چشم — lash-line' : 'نمای کامل — Full Face'}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={()=>{ setIntensity(42); document.getElementById('intensity') && (document.getElementById('intensity').value=42) }} className="text-[10.5px] font-extralight border hairline px-4 py-2 rounded-full hover:bg-[#FDFCFB] transition">بازنشانی</button>
+              <button onClick={()=>{ setIntensity(42); document.getElementById('intensity') && (document.getElementById('intensity').value=42) }} className="text-[10.5px] font-light border hairline px-4 py-2 rounded-full hover:bg-[#FDFCFB] transition">بازنشانی</button>
               <button onClick={()=>{ if(afterSrc){ const a=document.createElement('a'); a.href=afterSrc; a.download=`pmu-${activeService||'full'}-${Date.now()}.jpg`; a.click() } }} className="text-[10.5px] font-light bg-pmu-green text-white px-4 py-2 rounded-full hover:bg-black transition">ذخیره JPG</button>
             </div>
           </div>
@@ -339,17 +351,17 @@ export default function Page(){
                 onFaceDetected={handleLandmarks}
               />
               <div className="mt-4 flex items-center gap-3">
-                <span className="text-[10px] tracking-wide text-black/30">شدت</span>
+                <span className="text-[10px] tracking-wide text-black/60">شدت</span>
                 <input id="intensity" type="range" min={30} max={100} value={intensity} onChange={e=> setIntensity(Number(e.target.value))} className="flex-1" />
                 <span className="text-[11px] font-light text-black/50 min-w-[36px] text-left">{intensity}%</span>
               </div>
-              <p className="mt-1 text-[10px] font-extralight text-black/25 text-center">مات healed — soft-light + multiply + pigment noise • teeth stencil</p>
+              <p className="mt-1 text-[10px] font-light text-black/25 text-center">مات healed — soft-light + multiply + pigment noise • teeth stencil</p>
             </div>
 
             {/* styles */}
             <div className="lg:sticky lg:top-[104px]">
               <h3 className="text-[10px] tracking-[0.14em] font-light text-pmu-green">استایل‌ها — PBR</h3>
-              <p className="text-[11px] font-extralight text-black/30 mt-1">انتخاب کن تا روی 3D Mesh ببینی</p>
+              <p className="text-[11px] font-light text-black/60 mt-1">انتخاب کن تا روی 3D Mesh ببینی</p>
               <div className="mt-4 grid grid-cols-2 gap-2.5 max-h-[420px] overflow-y-auto pr-1 no-scrollbar">
                 {styles.map((s, idx)=>(
                   <button key={s.id} onClick={()=> setActiveIdx(idx)} className={`group text-right relative rounded-2xl border p-3 text-right flex flex-col gap-2 transition ${idx===activeIdx ? 'bg-white border-pmu-green/20 shadow-sm' : 'bg-white/40 hairline backdrop-blur hover:bg-white'}`}>
@@ -367,19 +379,19 @@ export default function Page(){
                     </div>
                     <div>
                       <p className="text-[11.5px] font-light tracking-wide text-pmu-green leading-none">{s.name}</p>
-                      <p className="text-[10px] font-extralight text-black/40 leading-4 mt-1 line-clamp-2">{s.en}</p>
+                      <p className="text-[10px] font-light text-black/65 leading-4 mt-1 line-clamp-2">{s.en}</p>
                     </div>
                   </button>
                 ))}
-                {!activeService && <p className="col-span-2 text-center text-[11px] font-extralight text-black/30 py-8">ابتدا خدمت را انتخاب کن</p>}
+                {!activeService && <p className="col-span-2 text-center text-[11px] font-light text-black/60 py-8">ابتدا خدمت را انتخاب کن</p>}
               </div>
 
               <AnimatePresence>
                 {activeStyle && (
                   <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} className="mt-4 border-t hairline pt-4">
-                    <p className="text-[10px] tracking-wide text-black/30">انتخاب فعلی — Three.js Shader</p>
+                    <p className="text-[10px] tracking-wide text-black/60">انتخاب فعلی — Three.js Shader</p>
                     <p className="text-[13px] font-light text-pmu-green mt-1">{activeStyle.name} — {activeStyle.en}</p>
-                    <p className="text-[11px] font-extralight leading-5 text-black/40 mt-1">Ombre gradient • feather • pigment micro-noise • 60fps</p>
+                    <p className="text-[11px] font-light leading-5 text-black/40 mt-1">Ombre gradient • feather • pigment micro-noise • 60fps</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -396,15 +408,15 @@ export default function Page(){
       <section id="compare" className="bg-[#FDFCFB] py-12 sm:py-16">
         <div className="max-w-[720px] mx-auto px-6">
           <div className="text-center">
-            <p className="text-[10px] tracking-[0.20em] text-black/30">۰۴ — مقایسه • pixel-perfect</p>
+            <p className="text-[10px] tracking-[0.20em] text-black/60">۰۴ — مقایسه • pixel-perfect</p>
             <h2 className="mt-2 font-serif text-[24px] tracking-[-0.02em] text-pmu-green">قبل و بعد — همان زوم 3D</h2>
-            <p className="mt-1 text-[11.5px] font-extralight text-black/35">اسلایدر روی همان فریم WebGL — بدون جابجایی</p>
+            <p className="mt-1 text-[11.5px] font-light text-black/60">اسلایدر روی همان فریم WebGL — بدون جابجایی</p>
           </div>
           <div className="mt-8">
             <BeforeAfterSlider beforeSrc={beforeSrc || imageSrc} afterSrc={afterSrc} />
             <div className="mt-4 flex gap-2.5">
               <button onClick={()=> setBookingOpen(true)} className="flex-1 bg-pmu-green text-white py-3 rounded-full text-[11px] tracking-wide font-light hover:bg-black transition">این مدل رو می‌خوام</button>
-              <a href="#canvas" className="px-6 py-3 rounded-full border hairline text-pmu-green text-[11px] font-extralight hover:bg-white transition">بازگشت به 3D</a>
+              <a href="#canvas" className="px-6 py-3 rounded-full border hairline text-pmu-green text-[11px] font-light hover:bg-white transition">بازگشت به 3D</a>
             </div>
           </div>
         </div>
@@ -415,13 +427,13 @@ export default function Page(){
         <div className="max-w-[1080px] mx-auto px-6">
           <div className="grid lg:grid-cols-[0.9fr_1.05fr] gap-10 items-start">
             <div>
-              <p className="text-[10px] tracking-[0.20em] text-black/30">۰۵ — رزرو • WhatsApp</p>
-              <h2 className="mt-3 font-serif text-[28px] sm:text-[30px] leading-[1.1] tracking-[-0.03em] text-pmu-green">همین مدل رو<br/><span className="italic text-black/40 font-extralight">رزرو کنیم؟</span></h2>
-              <p className="mt-3 text-[12.5px] leading-6 font-extralight text-black/40">فرم مینیمال — مستقیم به wa.me/989150000000</p>
-              <ul className="mt-6 space-y-2 text-[11.5px] font-extralight leading-6 text-black/45">
+              <p className="text-[10px] tracking-[0.20em] text-black/60">۰۵ — رزرو • WhatsApp</p>
+              <h2 className="mt-3 font-serif text-[28px] sm:text-[30px] leading-[1.1] tracking-[-0.03em] text-pmu-green">همین مدل رو<br/><span className="italic text-black/40 font-light">رزرو کنیم؟</span></h2>
+              <p className="mt-3 text-[12.5px] leading-6 font-light text-black/65">فرم مینیمال — مستقیم به wa.me/989150000000</p>
+              <ul className="mt-6 space-y-2 text-[11.5px] font-light leading-6 text-black/45">
                 <li>— مشاوره قبل از اجرا رایگان</li>
                 <li>— پاسخ واتساپ زیر ۲ ساعت</li>
-                <li className="text-[10.5px] text-black/30">مشهد • حضوری • ۱۰–۱۹</li>
+                <li className="text-[10.5px] text-black/60">مشهد • حضوری • ۱۰–۱۹</li>
               </ul>
             </div>
             <BookingModal inline selectedService={faService} selectedStyleName={activeStyleName} />
@@ -430,7 +442,7 @@ export default function Page(){
       </section>
 
       <footer className="bg-[#0F3D2E] text-white/60 py-8 border-t border-white/5">
-        <div className="max-w-[1080px] mx-auto px-6 flex flex-col sm:flex-row justify-between gap-5 text-[11px] font-extralight">
+        <div className="max-w-[1080px] mx-auto px-6 flex flex-col sm:flex-row justify-between gap-5 text-[11px] font-light">
           <div>
             <p className="font-serif tracking-[0.14em] text-white text-[11px]">Asal Rajabi — Virtual PMU Atelier</p>
             <p className="text-white/30 text-[10px] tracking-wide mt-1">React • Three.js • MediaPipe 468 • Framer Motion • 60fps</p>
