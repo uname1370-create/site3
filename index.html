@@ -265,7 +265,6 @@
   </div>
 
   <script type="module">
-    import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/+esm";
 
     const SERVICE_LABELS = { brow: "ابرو", lip: "لب", liner: "خط چشم" };
     const STYLES = {
@@ -299,6 +298,8 @@
     const RIGHT_LASH = [263, 466, 388, 387, 386, 385, 384, 398, 362];
     const LEFT_IRIS = 468;
     const RIGHT_IRIS = 473;
+    const BROW_ZONE = LEFT_BROW.concat(RIGHT_BROW);
+    const EYE_ZONE = LEFT_LASH.concat(RIGHT_LASH, [LEFT_IRIS, RIGHT_IRIS]);
 
     const state = {
       service: "brow",
@@ -307,7 +308,8 @@
       landmarks: null,
       displayW: 0,
       displayH: 0,
-      split: 0.5
+      split: 0.5,
+      crop: { x: 0, y: 0, w: 1, h: 1 }
     };
 
     let landmarker = null;
@@ -383,6 +385,7 @@
     function initLandmarker() {
       if (landmarkerPromise) return landmarkerPromise;
       landmarkerPromise = (async () => {
+        const { FaceLandmarker, FilesetResolver } = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/+esm");
         const wasm = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/wasm";
         const model = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
         const vision = await FilesetResolver.forVisionTasks(wasm);
@@ -421,8 +424,26 @@
         return await loadOne(src, true);
       } catch {
         if (fallback && fallback !== src) return loadOne(fallback, true);
-        throw new Error("بارگذاری تصویر ناموفق بود");
+        try {
+          return await loadOne(src, false);
+        } catch {
+          throw new Error("بارگذاری تصویر ناموفق بود");
+        }
       }
+    }
+
+    function fileToImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("fail"));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error("fail"));
+        reader.readAsDataURL(file);
+      });
     }
 
     async function processImage(img) {
@@ -457,9 +478,8 @@
         document.getElementById("magic").scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (err) {
         console.error(err);
-        els.placeholderText.textContent = "خطا در پردازش تصویر. دوباره تلاش کن.";
-        els.placeholder.classList.remove("hidden");
-        els.compare.classList.add("hidden");
+        els.placeholder.classList.add("hidden");
+        els.compare.classList.remove("hidden");
       } finally {
         els.processing.classList.add("hidden");
         els.processing.classList.remove("flex");
@@ -568,7 +588,11 @@
     }
 
     function mapLm(lm, i, w, h) {
-      return { x: lm[i].x * w, y: lm[i].y * h };
+      const c = state.crop || { x: 0, y: 0, w: 1, h: 1 };
+      return {
+        x: ((lm[i].x - c.x) / c.w) * w,
+        y: ((lm[i].y - c.y) / c.h) * h
+      };
     }
 
     function pts(lm, indices, w, h) {
@@ -777,7 +801,10 @@
         o.clearRect(0, 0, w, h);
         o.save();
         o.beginPath();
-        addSmooth(o, outer, t = "blur(2.4px)";
+        addSmooth(o, outer, true);
+        addSmooth(o, inner, true);
+        o.clip("evenodd");
+        o.filter = "blur(2.4px)";
         o.fillStyle = "#fff6f1";
         o.globalAlpha = 0.45;
         smoothPath(o, upper, true);
@@ -859,11 +886,13 @@
     els.fileInput.addEventListener("change", async (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
-      const url = URL.createObjectURL(file);
       try {
-        await processImage(await loadOne(url, false));
+        await processImage(await fileToImage(file));
+      } catch (err) {
+        console.error(err);
+        els.placeholderText.textContent = "آپلود عکس ناموفق بود. دوباره تلاش کن.";
+        els.placeholder.classList.remove("hidden");
       } finally {
-        URL.revokeObjectURL(url);
         els.fileInput.value = "";
       }
     });
@@ -877,11 +906,10 @@
     els.dropzone.addEventListener("drop", async (e) => {
       const file = e.dataTransfer.files && e.dataTransfer.files[0];
       if (!file || !file.type.startsWith("image/")) return;
-      const url = URL.createObjectURL(file);
       try {
-        await processImage(await loadOne(url, false));
-      } finally {
-        URL.revokeObjectURL(url);
+        await processImage(await fileToImage(file));
+      } catch (err) {
+        console.error(err);
       }
     });
 
@@ -925,12 +953,6 @@
         if (!state.image) return;
         layoutCanvases();
         if (state.landmarks) drawAll();
-        else drawOriginalOnly();
-      }, 120);
-    });
-  </script>
-</body>
-</html>
         else drawOriginalOnly();
       }, 120);
     });
