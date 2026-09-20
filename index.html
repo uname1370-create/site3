@@ -372,7 +372,11 @@
         els.serviceBtns.forEach((b) => b.classList.toggle("active", b === btn));
         renderStyles();
         syncServiceField();
-        if (state.landmarks) drawAll();
+        if (state.landmarks) {
+          updateCrop();
+          layoutCanvases();
+          drawAll();
+        }
       });
     });
 
@@ -445,6 +449,8 @@
           return;
         }
         state.landmarks = face;
+        updateCrop();
+        layoutCanvases();
         drawAll();
         els.wantThis.disabled = false;
         els.wantThis.classList.remove("opacity-50");
@@ -486,15 +492,46 @@
       return ctx;
     }
 
+    function boxOf(lm, indices) {
+      let minX = 1, minY = 1, maxX = 0, maxY = 0;
+      for (const i of indices) {
+        minX = Math.min(minX, lm[i].x);
+        minY = Math.min(minY, lm[i].y);
+        maxX = Math.max(maxX, lm[i].x);
+        maxY = Math.max(maxY, lm[i].y);
+      }
+      return { minX, minY, maxX, maxY, bw: maxX - minX, bh: maxY - minY };
+    }
+
+    function padBox(b, px, py) {
+      const x = Math.max(0, b.minX - b.bw * px);
+      const y = Math.max(0, b.minY - b.bh * py);
+      const x2 = Math.min(1, b.maxX + b.bw * px);
+      const y2 = Math.min(1, b.maxY + b.bh * py);
+      return { x, y, w: Math.max(0.04, x2 - x), h: Math.max(0.04, y2 - y) };
+    }
+
+    function updateCrop() {
+      const lm = state.landmarks;
+      if (!lm) {
+        state.crop = { x: 0, y: 0, w: 1, h: 1 };
+        return;
+      }
+      if (state.service === "brow") state.crop = padBox(boxOf(lm, BROW_ZONE), 0.38, 1.15);
+      else if (state.service === "lip") state.crop = padBox(boxOf(lm, LIP_OUTER), 0.32, 0.55);
+      else state.crop = padBox(boxOf(lm, EYE_ZONE), 0.42, 1.05);
+    }
+
     function layoutCanvases() {
       const img = state.image;
       if (!img) return;
-      const maxW = els.compare.parentElement.clientWidth;
+      const maxW = els.compare.parentElement.clientWidth || 360;
       const nw = img.naturalWidth || img.width;
       const nh = img.naturalHeight || img.height;
-      const aspect = nw / nh;
+      const c = state.crop || { x: 0, y: 0, w: 1, h: 1 };
+      const aspect = (c.w * nw) / (c.h * nh);
       state.displayW = maxW;
-      state.displayH = Math.round(maxW / aspect);
+      state.displayH = Math.max(120, Math.round(maxW / aspect));
       setupCanvas(els.afterCanvas, state.displayW, state.displayH);
       setupCanvas(els.beforeCanvas, state.displayW, state.displayH);
       els.beforeCanvas.style.width = state.displayW + "px";
@@ -510,15 +547,19 @@
       return ctx2d(layerCanvas);
     }
 
-    function drawOriginalOnly() {
+    function drawCropped(ctx, w, h) {
       const img = state.image;
+      const nw = img.naturalWidth || img.width;
+      const nh = img.naturalHeight || img.height;
+      const c = state.crop || { x: 0, y: 0, w: 1, h: 1 };
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, c.x * nw, c.y * nh, c.w * nw, c.h * nh, 0, 0, w, h);
+    }
+
+    function drawOriginalOnly() {
       const w = state.displayW, h = state.displayH;
-      const a = ctx2d(els.afterCanvas);
-      const b = ctx2d(els.beforeCanvas);
-      a.clearRect(0, 0, w, h);
-      b.clearRect(0, 0, w, h);
-      a.drawImage(img, 0, 0, w, h);
-      b.drawImage(img, 0, 0, w, h);
+      drawCropped(ctx2d(els.afterCanvas), w, h);
+      drawCropped(ctx2d(els.beforeCanvas), w, h);
     }
 
     function drawAll() {
@@ -596,7 +637,46 @@
       }
     }
 
+    function shapeBrow(poly, kind) {
+      const p = poly.map((q) => ({ x: q.x, y: q.y }));
+      const inner = { x: (p[4].x + p[5].x) / 2, y: (p[4].y + p[5].y) / 2 };
+      const outer = { x: (p[0].x + p[9].x) / 2, y: (p[0].y + p[9].y) / 2 };
+      const len = Math.hypot(outer.x - inner.x, outer.y - inner.y) || 1;
+      const tail = kind === "bold" ? 0.28 : kind === "ombre" ? 0.32 : kind === "hairstroke" ? 0.2 : kind === "feather" ? 0.14 : 0.1;
+      const lift = kind === "bold" ? 0.28 : kind === "hairstroke" ? 0.18 : kind === "ombre" ? 0.14 : 0.08;
+      const thick = kind === "bold" ? 0.22 : kind === "ombre" ? 0.2 : kind === "hairstroke" ? 0.16 : 0.12;
+      function push(pt, from, amt) {
+        const dx = pt.x - from.x, dy = pt.y - from.y;
+        const d = Math.hypot(dx, dy) || 1;
+        pt.x += (dx / d) * len * amt;
+        pt.y += (dy / d) * len * amt;
+      }
+      push(p[0], inner, tail);
+      push(p[9], inner, tail * 0.88);
+      push(p[1], inner, tail * 0.42);
+      push(p[8], inner, tail * 0.36);
+      p[2].y -= len * lift;
+      p[1].y -= len * lift * 0.5;
+      p[3].y -= len * lift * 0.28;
+      p[7].y += len * thick * 0.12;
+      for (let i = 0; i < 5; i++) {
+        const u = p[i], l = p[9 - i];
+        const dx = u.x - l.x, dy = u.y - l.y;
+        const d = Math.hypot(dx, dy) || 1;
+        u.x += (dx / d) * len * thick * 0.18;
+        u.y += (dy / d) * len * thick * 0.18;
+        l.x -= (dx / d) * len * thick * 0.14;
+        l.y -= (dy / d) * len * thick * 0.14;
+      }
+      if (kind === "ombre") {
+        p[4].x = p[4].x * 0.4 + inner.x * 0.6;
+        p[5].x = p[5].x * 0.4 + inner.x * 0.6;
+      }
+      return p;
+    }
+
     function drawBrow(main, poly, w, h, style, seed) {
+      poly = shapeBrow(poly, style.kind);
       const upper = poly.slice(0, 5).reverse();
       const lower = poly.slice(5);
       const inner = { x: (upper[0].x + lower[0].x) / 2, y: (upper[0].y + lower[0].y) / 2 };
@@ -612,24 +692,24 @@
       o.clip();
       const g = o.createLinearGradient(inner.x, inner.y, outer.x, outer.y);
       if (style.kind === "ombre") {
-        g.addColorStop(0, "rgba(90,68,52,0.12)");
-        g.addColorStop(0.35, "rgba(70,48,34,0.32)");
-        g.addColorStop(1, "rgba(36,20,12,0.62)");
+        g.addColorStop(0, "rgba(90,68,52,0.18)");
+        g.addColorStop(0.32, "rgba(70,48,34,0.5)");
+        g.addColorStop(1, "rgba(28,14,8,0.88)");
       } else if (style.kind === "natural") {
-        g.addColorStop(0, "rgba(106,74,56,0.22)");
-        g.addColorStop(1, "rgba(90,60,44,0.38)");
+        g.addColorStop(0, "rgba(106,74,56,0.38)");
+        g.addColorStop(1, "rgba(72,46,32,0.62)");
       } else if (style.kind === "bold") {
-        g.addColorStop(0, "rgba(50,30,18,0.45)");
-        g.addColorStop(1, "rgba(28,16,10,0.7)");
+        g.addColorStop(0, "rgba(42,24,14,0.72)");
+        g.addColorStop(1, "rgba(18,10,6,0.92)");
       } else {
-        g.addColorStop(0, "rgba(80,55,40,0.22)");
-        g.addColorStop(1, "rgba(50,32,20,0.5)");
+        g.addColorStop(0, "rgba(70,46,32,0.42)");
+        g.addColorStop(1, "rgba(36,22,14,0.78)");
       }
       o.fillStyle = g;
       o.fillRect(0, 0, w, h);
       o.restore();
-      compositeLayer(main, w, h, "multiply", style.kind === "bold" ? 0.48 : 0.36);
-      compositeLayer(main, w, h, "soft-light", 0.22);
+      compositeLayer(main, w, h, "multiply", style.kind === "bold" ? 0.7 : 0.58);
+      compositeLayer(main, w, h, "soft-light", 0.32);
 
       if (style.kind === "hairstroke" || style.kind === "feather" || style.kind === "natural") {
         o.clearRect(0, 0, w, h);
@@ -658,15 +738,15 @@
           const nx = -dy, ny = dx;
           const sx = cx + nx * across, sy = cy + ny * across;
           const hair = thick * (style.kind === "feather" ? 1.2 : 0.85) * (0.65 + hash(seed + i + 3) * 0.4);
-          o.globalAlpha = 0.45 * (0.5 + hash(seed + i + 5) * 0.5);
-          o.lineWidth = Math.max(0.45, 0.55 + hash(seed + i + 11) * 0.45);
+          o.globalAlpha = 0.7 * (0.55 + hash(seed + i + 5) * 0.45);
+          o.lineWidth = Math.max(0.7, 0.9 + hash(seed + i + 11) * 0.7);
           o.beginPath();
           o.moveTo(sx - hx * hair * 0.25, sy - hy * hair * 0.25);
           o.quadraticCurveTo(sx, sy, sx + hx * hair * 0.75, sy + hy * hair * 0.75);
           o.stroke();
         }
         o.restore();
-        compositeLayer(main, w, h, "multiply", 0.5);
+        compositeLayer(main, w, h, "multiply", 0.68);
       }
     }
 
@@ -697,10 +777,7 @@
         o.clearRect(0, 0, w, h);
         o.save();
         o.beginPath();
-        addSmooth(o, outer, true);
-        addSmooth(o, inner, true);
-        o.clip("evenodd");
-        o.filter = "blur(2.4px)";
+        addSmooth(o, outer, t = "blur(2.4px)";
         o.fillStyle = "#fff6f1";
         o.globalAlpha = 0.45;
         smoothPath(o, upper, true);
@@ -721,10 +798,10 @@
     function drawLiner(main, lm, w, h, style) {
       const scale = w / 420;
       const spec = {
-        lash: { thick: 1.2 * scale, blur: 1.1, alpha: 0.5, wing: 0 },
-        classic: { thick: 2.0 * scale, blur: 1.15, alpha: 0.52, wing: 0 },
-        cat: { thick: 2.15 * scale, blur: 1.05, alpha: 0.55, wing: w * 0.04 },
-        smoky: { thick: 3.4 * scale, blur: 3.2, alpha: 0.4, wing: w * 0.014 }
+        lash: { thick: 2.4 * scale, blur: 0.75, alpha: 0.72, wing: 0 },
+        classic: { thick: 3.4 * scale, blur: 0.65, alpha: 0.8, wing: w * 0.01 },
+        cat: { thick: 3.6 * scale, blur: 0.55, alpha: 0.86, wing: w * 0.07 },
+        smoky: { thick: 5.6 * scale, blur: 2.2, alpha: 0.62, wing: w * 0.028 }
       }[style.kind];
 
       [
@@ -736,7 +813,7 @@
           const a = line[0], b = line[Math.min(2, line.length - 1)];
           const dx = a.x - b.x, dy = a.y - b.y;
           const d = Math.hypot(dx, dy) || 1;
-          line = [{ x: a.x + (dx / d) * spec.wing, y: a.y + (dy / d) * spec.wing - w * 0.008 }].concat(line);
+          line = [{ x: a.x + (dx / d) * spec.wing, y: a.y + (dy / d) * spec.wing - Math.abs(spec.wing) * 0.28 }].concat(line);
         }
         const origin = mapLm(lm, iris, w, h);
         const outer = offsetAway(line, origin, spec.thick);
@@ -848,6 +925,12 @@
         if (!state.image) return;
         layoutCanvases();
         if (state.landmarks) drawAll();
+        else drawOriginalOnly();
+      }, 120);
+    });
+  </script>
+</body>
+</html>
         else drawOriginalOnly();
       }, 120);
     });
