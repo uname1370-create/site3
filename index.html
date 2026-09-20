@@ -266,6 +266,7 @@
 
   <script type="module">
     import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/+esm";
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js";
 
     const SERVICE_LABELS = { brow: "ابرو", lip: "لب", liner: "خط چشم" };
 
@@ -294,13 +295,64 @@
 
     const LIP_OUTER = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 181, 91, 146];
     const LIP_INNER = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
-    const LIP_HOLE = [78, 191, 80, 13, 312, 308, 14, 87];
     const LEFT_BROW = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
     const RIGHT_BROW = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
     const LEFT_LASH = [33, 246, 161, 160, 159, 158, 157, 173, 133];
     const RIGHT_LASH = [263, 466, 388, 387, 386, 385, 384, 398, 362];
     const LEFT_IRIS = 468;
     const RIGHT_IRIS = 473;
+
+    const VERT = `
+      attribute vec2 photoUv;
+      varying vec2 vUv;
+      varying vec2 vPhotoUv;
+      void main() {
+        vUv = uv;
+        vPhotoUv = photoUv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `;
+
+    const FRAG = `
+      uniform sampler2D uPhoto;
+      uniform sampler2D uStroke;
+      uniform vec3 uColor;
+      uniform float uMul;
+      uniform float uSoft;
+      uniform float uFeather;
+      uniform float uOmbre;
+      uniform float uUseStroke;
+      uniform float uSatin;
+      varying vec2 vUv;
+      varying vec2 vPhotoUv;
+
+      float sl(float a, float b) {
+        return b < 0.5
+          ? 2.0 * a * b + a * a * (1.0 - 2.0 * b)
+          : sqrt(max(a, 0.0)) * (2.0 * b - 1.0) + 2.0 * a * (1.0 - b);
+      }
+      vec3 softLight(vec3 a, vec3 b) {
+        return vec3(sl(a.r, b.r), sl(a.g, b.g), sl(a.b, b.b));
+      }
+
+      void main() {
+        vec3 base = texture2D(uPhoto, vPhotoUv).rgb;
+        float mask = smoothstep(0.0, uFeather, vUv.y) * smoothstep(1.0, 1.0 - uFeather, vUv.y);
+        mask *= smoothstep(0.0, 0.05, vUv.x) * smoothstep(1.0, 0.95, vUv.x);
+        if (uOmbre > 0.01) mask *= mix(0.18, 1.0, pow(clamp(vUv.x, 0.0, 1.0), 0.82));
+        if (uUseStroke > 0.5) {
+          float s = texture2D(uStroke, vUv).r;
+          mask *= mix(0.28, 1.0, s);
+        }
+        vec3 tint = mix(base, softLight(base, uColor), clamp(mask * uSoft, 0.0, 1.0));
+        tint = mix(tint, tint * mix(vec3(1.0), uColor, 0.82), clamp(mask * uMul, 0.0, 1.0));
+        if (uSatin > 0.01) {
+          float hi = smoothstep(0.42, 0.92, vUv.y) * (1.0 - abs(vUv.x - 0.5) * 1.35);
+          tint += vec3(0.07, 0.045, 0.035) * hi * uSatin * mask;
+        }
+        gl_FragColor = vec4(tint, 1.0);
+      }
+    `;
 
     const state = {
       service: "brow",
@@ -314,7 +366,15 @@
 
     let landmarker = null;
     let landmarkerPromise = null;
-    let layerCanvas = null;
+    const gl = {
+      renderer: null,
+      scene: null,
+      camera: null,
+      photoMesh: null,
+      photoTex: null,
+      makeup: null,
+      strokeTex: null
+    };
 
     const els = {
       serviceBtns: document.querySelectorAll(".service-btn"),
@@ -466,441 +526,321 @@
       const aspect = img.naturalWidth / img.naturalHeight;
       state.displayW = maxW;
       state.displayH = Math.round(maxW / aspect);
-      setupCanvas(els.afterCanvas, state.displayW, state.displayH);
-      setupCanvas(els.beforeCanvas, state.displayW, state.displayH);
-      els.beforeCanvas.style.width = state.displayW + "px";
-      els.beforeCanvas.style.height = state.displayH + "px";
-      ensureLayer(state.displayW, state.displayH);
+      const w = state.displayW, h = state.displayH;
+
+      const r = dpr();
+      els.beforeCanvas.width = Math.round(w * r);
+      els.beforeCanvas.height = Math.round(h * r);
+      els.beforeCanvas.style.width = w + "px";
+      els.beforeCanvas.style.height = h + "px";
+      els.afterCanvas.style.width = w + "px";
+      els.afterCanvas.style.height = h + "px";
+      ensureThree(w, h);
       applySplit(state.split);
     }
 
-    function setupCanvas(canvas, w, h) {
-      const r = dpr();
-      canvas.width = Math.round(w * r);
-      canvas.height = Math.round(h * r);
-      canvas.style.width = w + "px";
-      canvas.style.height = h + "px";
-      const ctx = canvas.getContext("2d");
-      ctx.setTransform(r, 0, 0, r, 0, 0);
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      return ctx;
+    function ensureThree(w, h) {
+      if (!gl.renderer) {
+        gl.renderer = new THREE.WebGLRenderer({
+          canvas: els.afterCanvas,
+          antialias: true,
+          alpha: false,
+          preserveDrawingBuffer: true
+        });
+        gl.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        gl.scene = new THREE.Scene();
+        gl.camera = new THREE.OrthographicCamera(-w / 2, w / 2, h / 2, -h / 2, -1000, 1000);
+        gl.camera.position.z = 400;
+        gl.makeup = new THREE.Group();
+        gl.scene.add(gl.makeup);
+        gl.strokeTex = makeStrokeTexture();
+      }
+      gl.renderer.setPixelRatio(dpr());
+      gl.renderer.setSize(w, h, false);
+      gl.camera.left = -w / 2;
+      gl.camera.right = w / 2;
+      gl.camera.top = h / 2;
+      gl.camera.bottom = -h / 2;
+      gl.camera.updateProjectionMatrix();
+      setPhoto(w, h);
     }
 
-    function ctx2d(canvas) {
-      const ctx = canvas.getContext("2d");
-      const r = dpr();
-      ctx.setTransform(r, 0, 0, r, 0, 0);
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      return ctx;
+    function setPhoto(w, h) {
+      if (gl.photoTex) gl.photoTex.dispose();
+      gl.photoTex = new THREE.Texture(state.image);
+      gl.photoTex.colorSpace = THREE.SRGBColorSpace;
+      gl.photoTex.minFilter = THREE.LinearFilter;
+      gl.photoTex.magFilter = THREE.LinearFilter;
+      gl.photoTex.generateMipmaps = false;
+      gl.photoTex.needsUpdate = true;
+      if (gl.photoMesh) {
+        gl.scene.remove(gl.photoMesh);
+        gl.photoMesh.geometry.dispose();
+        gl.photoMesh.material.dispose();
+      }
+      gl.photoMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(w, h),
+        new THREE.MeshBasicMaterial({ map: gl.photoTex })
+      );
+      gl.photoMesh.position.z = -80;
+      gl.scene.add(gl.photoMesh);
     }
 
-    function ensureLayer(w, h) {
-      const r = dpr();
-      if (!layerCanvas) layerCanvas = document.createElement("canvas");
-      layerCanvas.width = Math.round(w * r);
-      layerCanvas.height = Math.round(h * r);
-      return ctx2d(layerCanvas);
+    function makeStrokeTexture() {
+      const c = document.createElement("canvas");
+      c.width = 512;
+      c.height = 128;
+      const ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, 512, 128);
+      ctx.strokeStyle = "#fff";
+      ctx.lineCap = "round";
+      for (let i = 0; i < 90; i++) {
+        const x = (i / 90) * 512 + (Math.sin(i * 12.1) * 6);
+        const y = 18 + (i % 7) * 14 + Math.sin(i * 3.7) * 8;
+        const len = 22 + (i % 5) * 6;
+        const ang = -0.55 + Math.sin(i * 2.2) * 0.22;
+        ctx.globalAlpha = 0.35 + (i % 4) * 0.12;
+        ctx.lineWidth = 0.8 + (i % 3) * 0.4;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.quadraticCurveTo(x + Math.cos(ang) * len * 0.5, y + Math.sin(ang) * len * 0.4, x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+        ctx.stroke();
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    function hexToVec3(hex) {
+      const n = hex.replace("#", "");
+      return new THREE.Vector3(
+        parseInt(n.slice(0, 2), 16) / 255,
+        parseInt(n.slice(2, 4), 16) / 255,
+        parseInt(n.slice(4, 6), 16) / 255
+      );
+    }
+
+    function lmPt(lm, i, w, h) {
+      const p = lm[i];
+      return {
+        x: (p.x - 0.5) * w,
+        y: (0.5 - p.y) * h,
+        z: -p.z * w * 0.4,
+        pu: p.x,
+        pv: 1 - p.y
+      };
+    }
+
+    function pts3(lm, indices, w, h) {
+      return indices.map((i) => lmPt(lm, i, w, h));
+    }
+
+    function lerpP(a, b, t) {
+      return {
+        x: a.x + (b.x - a.x) * t,
+        y: a.y + (b.y - a.y) * t,
+        z: a.z + (b.z - a.z) * t,
+        pu: a.pu + (b.pu - a.pu) * t,
+        pv: a.pv + (b.pv - a.pv) * t
+      };
+    }
+
+    function resample(curve, n, closed) {
+      const src = closed ? curve.concat([curve[0]]) : curve;
+      const dist = [0];
+      for (let i = 1; i < src.length; i++) {
+        const d = Math.hypot(src[i].x - src[i - 1].x, src[i].y - src[i - 1].y);
+        dist.push(dist[i - 1] + d);
+      }
+      const total = dist[dist.length - 1] || 1;
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        const t = (i / (n - 1)) * total;
+        let k = 1;
+        while (k < dist.length && dist[k] < t) k++;
+        const a = src[k - 1], b = src[Math.min(k, src.length - 1)];
+        const span = dist[k] - dist[k - 1] || 1;
+        out.push(lerpP(a, b, (t - dist[k - 1]) / span));
+      }
+      return out;
+    }
+
+    function offsetPts(curve, origin, amount) {
+      return curve.map((p) => {
+        const dx = p.x - origin.x;
+        const dy = p.y - origin.y;
+        const len = Math.hypot(dx, dy) || 1;
+        return {
+          x: p.x + (dx / len) * amount,
+          y: p.y + (dy / len) * amount,
+          z: p.z,
+          pu: p.pu,
+          pv: p.pv
+        };
+      });
+    }
+
+    function stripGeometry(inner, outer) {
+      const n = inner.length;
+      const pos = [];
+      const uv = [];
+      const photo = [];
+      const idx = [];
+      for (let i = 0; i < n; i++) {
+        const u = i / (n - 1);
+        const a = inner[i], b = outer[i];
+        pos.push(a.x, a.y, a.z, b.x, b.y, b.z);
+        uv.push(u, 0, u, 1);
+        photo.push(a.pu, a.pv, b.pu, b.pv);
+      }
+      for (let i = 0; i < n - 1; i++) {
+        const a = i * 2, b = a + 1, c = a + 2, d = a + 3;
+        idx.push(a, c, b, b, c, d);
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+      g.setAttribute("photoUv", new THREE.Float32BufferAttribute(photo, 2));
+      g.setIndex(idx);
+      g.computeVertexNormals();
+      return g;
+    }
+
+    function makeupMaterial(style, extras = {}) {
+      return new THREE.ShaderMaterial({
+        uniforms: {
+          uPhoto: { value: gl.photoTex },
+          uStroke: { value: gl.strokeTex },
+          uColor: { value: hexToVec3(style.color) },
+          uMul: { value: extras.mul ?? 0.28 },
+          uSoft: { value: extras.soft ?? 0.5 },
+          uFeather: { value: extras.feather ?? 0.22 },
+          uOmbre: { value: extras.ombre ?? 0 },
+          uUseStroke: { value: extras.stroke ?? 0 },
+          uSatin: { value: extras.satin ?? 0 }
+        },
+        vertexShader: VERT,
+        fragmentShader: FRAG,
+        depthWrite: false,
+        transparent: false
+      });
+    }
+
+    function clearMakeup() {
+      if (!gl.makeup) return;
+      while (gl.makeup.children.length) {
+        const m = gl.makeup.children.pop();
+        m.geometry.dispose();
+        m.material.dispose();
+      }
+    }
+
+    function addStrip(inner, outer, style, extras) {
+      const mesh = new THREE.Mesh(stripGeometry(inner, outer), makeupMaterial(style, extras));
+      gl.makeup.add(mesh);
     }
 
     function drawOriginalOnly() {
       const img = state.image;
       const w = state.displayW, h = state.displayH;
-      const a = ctx2d(els.afterCanvas);
-      const b = ctx2d(els.beforeCanvas);
-      a.clearRect(0, 0, w, h);
+      const r = dpr();
+      const b = els.beforeCanvas.getContext("2d");
+      b.setTransform(r, 0, 0, r, 0, 0);
+      b.imageSmoothingEnabled = true;
+      b.imageSmoothingQuality = "high";
       b.clearRect(0, 0, w, h);
-      a.drawImage(img, 0, 0, w, h);
       b.drawImage(img, 0, 0, w, h);
+      if (gl.renderer) {
+        clearMakeup();
+        gl.renderer.render(gl.scene, gl.camera);
+      }
     }
 
     function drawAll() {
       drawOriginalOnly();
-      const ctx = ctx2d(els.afterCanvas);
-      paintMakeup(ctx, state.landmarks, state.displayW, state.displayH, state.service, currentStyle());
+      const lm = state.landmarks;
+      const w = state.displayW, h = state.displayH;
+      const style = currentStyle();
+      clearMakeup();
+      if (state.service === "lip") buildLips(lm, w, h, style);
+      else if (state.service === "brow") buildBrows(lm, w, h, style);
+      else buildLiner(lm, w, h, style);
+      gl.renderer.render(gl.scene, gl.camera);
     }
 
-    function pts(landmarks, indices, w, h) {
-      return indices.map((i) => ({ x: landmarks[i].x * w, y: landmarks[i].y * h }));
-    }
-
-    function pt(landmarks, i, w, h) {
-      return { x: landmarks[i].x * w, y: landmarks[i].y * h };
-    }
-
-    function addSmooth(ctx, points, closed = true) {
-      if (points.length < 2) return;
-      ctx.moveTo(points[0].x, points[0].y);
-      if (points.length === 2) {
-        ctx.lineTo(points[1].x, points[1].y);
-        return;
-      }
-      for (let i = 0; i < points.length - 1; i++) {
-        const p0 = points[i];
-        const p1 = points[i + 1];
-        ctx.quadraticCurveTo(p0.x, p0.y, (p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
-      }
-      const last = points[points.length - 1];
-      if (closed) {
-        const first = points[0];
-        ctx.quadraticCurveTo(last.x, last.y, (last.x + first.x) / 2, (last.y + first.y) / 2);
-        ctx.closePath();
-      } else {
-        ctx.lineTo(last.x, last.y);
-      }
-    }
-
-    function smoothPath(ctx, points, closed = true) {
-      ctx.beginPath();
-      addSmooth(ctx, points, closed);
-    }
-
-    function inflate(points, scale) {
-      let cx = 0, cy = 0;
-      for (const p of points) { cx += p.x; cy += p.y; }
-      cx /= points.length; cy /= points.length;
-      return points.map((p) => ({
-        x: cx + (p.x - cx) * scale,
-        y: cy + (p.y - cy) * scale
-      }));
-    }
-
-    function lerpPt(curve, t) {
-      const n = curve.length - 1;
-      const f = Math.max(0, Math.min(1, t)) * n;
-      const i = Math.min(n - 1, Math.floor(f));
-      const u = f - i;
-      return {
-        x: curve[i].x + (curve[i + 1].x - curve[i].x) * u,
-        y: curve[i].y + (curve[i + 1].y - curve[i].y) * u
-      };
-    }
-
-    function hash(i) {
-      const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
-      return x - Math.floor(x);
-    }
-
-    function splitBrow(poly) {
-      return {
-        upper: poly.slice(0, 5).reverse(),
-        lower: poly.slice(5)
-      };
-    }
-
-    function liftArch(poly, amount) {
-      const copy = poly.map((p) => ({ ...p }));
-      copy[2].y -= amount;
-      copy[1].y -= amount * 0.45;
-      copy[3].y -= amount * 0.35;
-      return copy;
-    }
-
-    function compositeLayer(main, w, h, mode, alpha) {
-      main.save();
-      main.globalCompositeOperation = mode;
-      main.globalAlpha = alpha;
-      main.drawImage(layerCanvas, 0, 0, w, h);
-      main.restore();
-    }
-
-    function paintMakeup(ctx, lm, w, h, service, style) {
-      if (service === "brow") {
-        drawOneBrow(ctx, pts(lm, LEFT_BROW, w, h), w, h, style, 1);
-        drawOneBrow(ctx, pts(lm, RIGHT_BROW, w, h), w, h, style, 2);
-      } else if (service === "lip") {
-        drawLips(ctx, lm, w, h, style);
-      } else {
-        drawLiner(ctx, lm, w, h, style);
-      }
-    }
-
-    function fillBrowShape(o, poly, color, blur) {
-      o.save();
-      o.filter = `blur(${blur}px)`;
-      o.fillStyle = color;
-      smoothPath(o, poly, true);
-      o.fill();
-      o.restore();
-    }
-
-    function drawHairStrokes(o, upper, lower, opts, seed) {
-      const n = opts.count;
-      o.save();
-      o.strokeStyle = opts.color;
-      o.lineCap = "round";
-      o.lineJoin = "round";
-      o.filter = opts.blur ? `blur(${opts.blur}px)` : "none";
-      for (let i = 0; i < n; i++) {
-        const t = i / (n - 1);
-        const u = lerpPt(upper, t);
-        const l = lerpPt(lower, t);
-        const cx = (u.x + l.x) / 2;
-        const cy = (u.y + l.y) / 2;
-        const thick = Math.hypot(u.x - l.x, u.y - l.y);
-        const t2 = Math.min(1, t + 0.1);
-        const u2 = lerpPt(upper, t2);
-        const l2 = lerpPt(lower, t2);
-        let dx = (u2.x + l2.x) / 2 - cx;
-        let dy = (u2.y + l2.y) / 2 - cy;
-        if (t < opts.upLiftUntil) {
-          dy -= Math.abs(dx) * opts.upLift * (1 - t / opts.upLiftUntil);
-        }
-        const len = Math.hypot(dx, dy) || 1;
-        dx /= len; dy /= len;
-        const jitter = (hash(seed + i) - 0.5) * opts.jitter;
-        const c = Math.cos(jitter), s = Math.sin(jitter);
-        const hx = dx * c - dy * s;
-        const hy = dx * s + dy * c;
-        const across = (hash(seed + i + 9) - 0.5) * thick * opts.spread;
-        const nx = -dy, ny = dx;
-        const sx = cx + nx * across;
-        const sy = cy + ny * across;
-        const hairLen = thick * opts.lenMul * (0.65 + hash(seed + i + 3) * 0.5);
-        const dens = opts.density(t);
-        o.globalAlpha = opts.alpha * dens * (0.5 + hash(seed + i + 5) * 0.5);
-        o.lineWidth = Math.max(0.45, opts.strokeW * (0.55 + hash(seed + i + 11) * 0.7));
-        o.beginPath();
-        const back = opts.back || 0.28;
-        o.moveTo(sx - hx * hairLen * back, sy - hy * hairLen * back);
-        o.quadraticCurveTo(sx, sy, sx + hx * hairLen * (1 - back), sy + hy * hairLen * (1 - back));
-        o.stroke();
-      }
-      o.restore();
-    }
-
-    function drawOneBrow(main, poly, w, h, style, seed) {
-      const o = ensureLayer(w, h);
-      o.clearRect(0, 0, w, h);
-      let shaped = poly;
-      if (style.kind === "bold") shaped = liftArch(poly, w * 0.006);
-      if (style.kind === "natural") shaped = inflate(poly, 0.96);
-      const { upper, lower } = splitBrow(shaped);
-      const inner = { x: (upper[0].x + lower[0].x) / 2, y: (upper[0].y + lower[0].y) / 2 };
-      const outer = {
-        x: (upper[upper.length - 1].x + lower[lower.length - 1].x) / 2,
-        y: (upper[upper.length - 1].y + lower[lower.length - 1].y) / 2
-      };
-
-      if (style.kind === "natural") {
-        fillBrowShape(o, inflate(shaped, 1.02), style.color, 4.8);
-        compositeLayer(main, w, h, "multiply", 0.24);
-        compositeLayer(main, w, h, "soft-light", 0.28);
-        o.clearRect(0, 0, w, h);
-        drawHairStrokes(o, upper, lower, {
-          count: 26, color: style.color, alpha: 0.36, strokeW: 0.7, lenMul: 0.55,
-          jitter: 0.22, spread: 0.45, upLift: 0.35, upLiftUntil: 0.4, blur: 0.7,
-          density: () => 0.7
-        }, seed * 17);
-        compositeLayer(main, w, h, "multiply", 0.42);
-      } else if (style.kind === "hairstroke") {
-        fillBrowShape(o, shaped, style.color, 2.6);
-        compositeLayer(main, w, h, "multiply", 0.14);
-        compositeLayer(main, w, h, "soft-light", 0.2);
-        o.clearRect(0, 0, w, h);
-        drawHairStrokes(o, upper, lower, {
-          count: 54, color: style.color, alpha: 0.58, strokeW: 0.55, lenMul: 0.92,
-          jitter: 0.12, spread: 0.62, upLift: 0.55, upLiftUntil: 0.42, blur: 0.4,
-          density: (t) => 0.75 + t * 0.25
-        }, seed * 31);
-        compositeLayer(main, w, h, "multiply", 0.55);
-      } else if (style.kind === "ombre") {
-        o.save();
-        o.filter = "blur(3.8px)";
-        smoothPath(o, inflate(shaped, 1.04), true);
-        o.clip();
-        const g = o.createLinearGradient(inner.x, inner.y, outer.x, outer.y);
-        g.addColorStop(0, "rgba(90,70,55,0.10)");
-        g.addColorStop(0.28, "rgba(70,48,34,0.22)");
-        g.addColorStop(0.62, "rgba(55,36,24,0.42)");
-        g.addColorStop(1, "rgba(40,24,16,0.58)");
-        o.fillStyle = g;
-        o.fillRect(0, 0, w, h);
-        o.restore();
-        compositeLayer(main, w, h, "multiply", 0.44);
-        compositeLayer(main, w, h, "soft-light", 0.22);
-        o.clearRect(0, 0, w, h);
-        drawHairStrokes(o, upper, lower, {
-          count: 18, color: style.color, alpha: 0.24, strokeW: 0.5, lenMul: 0.5,
-          jitter: 0.08, spread: 0.3, upLift: 0.2, upLiftUntil: 0.3, blur: 0.9,
-          density: (t) => 0.2 + t * 0.8
-        }, seed * 41);
-        compositeLayer(main, w, h, "multiply", 0.34);
-      } else if (style.kind === "feather") {
-        fillBrowShape(o, inflate(shaped, 0.98), style.color, 4.2);
-        compositeLayer(main, w, h, "multiply", 0.12);
-        compositeLayer(main, w, h, "soft-light", 0.22);
-        o.clearRect(0, 0, w, h);
-        drawHairStrokes(o, upper, lower, {
-          count: 36, color: style.color, alpha: 0.42, strokeW: 0.62, lenMul: 1.25,
-          jitter: 0.38, spread: 0.85, upLift: 0.85, upLiftUntil: 0.55, blur: 0.65,
-          back: 0.15, density: (t) => 0.9 - t * 0.25
-        }, seed * 53);
-        compositeLayer(main, w, h, "multiply", 0.48);
-      } else {
-        const boldPoly = inflate(shaped, 1.12);
-        fillBrowShape(o, boldPoly, style.color, 2.2);
-        compositeLayer(main, w, h, "multiply", 0.36);
-        compositeLayer(main, w, h, "soft-light", 0.2);
-        o.clearRect(0, 0, w, h);
-        o.save();
-        o.filter = "blur(1.2px)";
-        o.strokeStyle = style.color;
-        o.lineWidth = Math.max(1.1, w * 0.0045);
-        o.globalAlpha = 0.4;
-        smoothPath(o, boldPoly, true);
-        o.stroke();
-        o.restore();
-        compositeLayer(main, w, h, "multiply", 0.5);
-      }
-    }
-
-    function drawLips(main, lm, w, h, style) {
-      const outer = pts(lm, LIP_OUTER, w, h);
-      const innerFull = pts(lm, LIP_INNER, w, h);
-      const hole = pts(lm, LIP_HOLE, w, h);
-      const o = ensureLayer(w, h);
-      o.clearRect(0, 0, w, h);
-
-      o.save();
-      o.filter = "blur(2.8px)";
-      o.fillStyle = style.color;
-      o.globalAlpha = 0.92;
-      smoothPath(o, outer, true);
-      o.fill();
-      o.restore();
-
-      o.save();
-      o.filter = "none";
-      o.globalCompositeOperation = "destination-out";
-      o.fillStyle = "#000";
-      smoothPath(o, inflate(innerFull, 1.06), true);
-      o.fill();
-      smoothPath(o, inflate(hole, 1.1), true);
-      o.fill();
-      o.restore();
-
-      compositeLayer(main, w, h, "soft-light", style.finish === "matte" ? 0.46 : 0.58);
-      compositeLayer(main, w, h, "multiply", style.alpha);
-
-      if (style.finish === "satin") {
-        o.clearRect(0, 0, w, h);
-        const upper = pts(lm, [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291], w, h);
-        o.save();
-        o.filter = "blur(3.2px)";
-        o.fillStyle = "#fff8f4";
-        o.globalAlpha = 0.55;
-        smoothPath(o, upper, true);
-        o.fill();
-        o.globalCompositeOperation = "destination-out";
-        o.filter = "none";
-        smoothPath(o, inflate(innerFull, 1.02), true);
-        o.fill();
-        o.restore();
-        compositeLayer(main, w, h, "soft-light", 0.22);
-      }
-    }
-
-    function offsetAway(points, origin, amount) {
-      return points.map((p) => {
-        const dx = p.x - origin.x;
-        const dy = p.y - origin.y;
-        const len = Math.hypot(dx, dy) || 1;
-        return { x: p.x + (dx / len) * amount, y: p.y + (dy / len) * amount };
+    function buildLips(lm, w, h, style) {
+      const outer = resample(pts3(lm, LIP_OUTER, w, h), 48, true);
+      const inner = resample(pts3(lm, LIP_INNER, w, h), 48, true);
+      addStrip(inner, outer, style, {
+        mul: style.alpha,
+        soft: style.finish === "matte" ? 0.46 : 0.58,
+        feather: 0.2,
+        satin: style.finish === "satin" ? 0.55 : 0.12
       });
     }
 
-    function wingTip(lash, len, lift) {
-      const a = lash[0];
-      const b = lash[Math.min(2, lash.length - 1)];
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      const d = Math.hypot(dx, dy) || 1;
-      return { x: a.x + (dx / d) * len, y: a.y + (dy / d) * len - lift };
+    function browCurves(lm, indices, w, h) {
+      const poly = pts3(lm, indices, w, h);
+      const upper = resample(poly.slice(0, 5).reverse(), 28, false);
+      const lower = resample(poly.slice(5), 28, false);
+      return { upper, lower };
     }
 
-    function drawEye(main, lash, iris, w, h, style, seed) {
-      const o = ensureLayer(w, h);
-      o.clearRect(0, 0, w, h);
+    function buildBrows(lm, w, h, style) {
+      const extras = {
+        natural: { mul: 0.22, soft: 0.36, feather: 0.32, stroke: 0.4, ombre: 0 },
+        hairstroke: { mul: 0.34, soft: 0.28, feather: 0.18, stroke: 1, ombre: 0.15 },
+        ombre: { mul: 0.3, soft: 0.4, feather: 0.28, stroke: 0.25, ombre: 1 },
+        feather: { mul: 0.24, soft: 0.32, feather: 0.36, stroke: 1, ombre: 0 },
+        bold: { mul: 0.4, soft: 0.3, feather: 0.14, stroke: 0, ombre: 0 }
+      }[style.kind] || { mul: 0.28, soft: 0.35, feather: 0.24, stroke: 0, ombre: 0 };
+
+      [LEFT_BROW, RIGHT_BROW].forEach((idx) => {
+        const { upper, lower } = browCurves(lm, idx, w, h);
+        addStrip(lower, upper, style, extras);
+      });
+    }
+
+    function buildLiner(lm, w, h, style) {
       const scale = w / 420;
+      const specs = {
+        lash: { thick: 1.15 * scale, feather: 0.42, mul: 0.28, soft: 0.22, wing: 0 },
+        classic: { thick: 2.05 * scale, feather: 0.28, mul: 0.34, soft: 0.24, wing: 0 },
+        cat: { thick: 2.2 * scale, feather: 0.24, mul: 0.38, soft: 0.22, wing: w * 0.042 },
+        smoky: { thick: 3.6 * scale, feather: 0.48, mul: 0.26, soft: 0.32, wing: w * 0.016 }
+      }[style.kind];
 
-      if (style.kind === "lash") {
-        o.save();
-        o.filter = "blur(0.45px)";
-        o.strokeStyle = style.color;
-        o.lineCap = "round";
-        o.lineWidth = Math.max(0.7, 1.05 * scale);
-        o.globalAlpha = 0.55;
-        smoothPath(o, lash, false);
-        o.stroke();
-        o.restore();
-        compositeLayer(main, w, h, "multiply", 0.7);
-        return;
-      }
-
-      if (style.kind === "classic") {
-        const band = Math.max(1.15, 1.7 * scale);
-        const outer = offsetAway(lash, iris, band);
-        const poly = [...lash, ...outer.slice().reverse()];
-        o.save();
-        o.filter = "blur(0.55px)";
-        o.fillStyle = style.color;
-        smoothPath(o, poly, true);
-        o.fill();
-        o.restore();
-        compositeLayer(main, w, h, "multiply", 0.62);
-        return;
-      }
-
-      if (style.kind === "cat") {
-        const band = Math.max(1.3, 2.05 * scale);
-        const outer = offsetAway(lash, iris, band);
-        const tip = wingTip(lash, w * 0.046, w * 0.012);
-        const poly = [...lash, tip, ...outer.slice().reverse()];
-        o.save();
-        o.filter = "blur(0.5px)";
-        o.fillStyle = style.color;
-        smoothPath(o, poly, true);
-        o.fill();
-        o.strokeStyle = style.color;
-        o.lineWidth = Math.max(0.7, 0.9 * scale);
-        o.lineCap = "round";
-        smoothPath(o, [lash[0], tip], false);
-        o.stroke();
-        o.restore();
-        compositeLayer(main, w, h, "multiply", 0.68);
-        return;
-      }
-
-      const band = Math.max(1.8, 2.8 * scale);
-      const outer = offsetAway(lash, iris, band * 1.35);
-      const tip = wingTip(lash, w * 0.022, w * 0.006);
-      const poly = [...lash, tip, ...outer.slice().reverse()];
-      o.save();
-      o.filter = "blur(2.8px)";
-      o.fillStyle = style.color;
-      o.globalAlpha = 0.85;
-      smoothPath(o, poly, true);
-      o.fill();
-      o.restore();
-      compositeLayer(main, w, h, "multiply", 0.42);
-      o.clearRect(0, 0, w, h);
-      o.save();
-      o.filter = "blur(0.8px)";
-      o.strokeStyle = style.color;
-      o.lineWidth = Math.max(0.9, 1.3 * scale);
-      o.lineCap = "round";
-      o.globalAlpha = 0.7;
-      smoothPath(o, lash, false);
-      o.stroke();
-      o.restore();
-      compositeLayer(main, w, h, "multiply", 0.55);
-    }
-
-    function drawLiner(ctx, lm, w, h, style) {
-      drawEye(ctx, pts(lm, LEFT_LASH, w, h), pt(lm, LEFT_IRIS, w, h), w, h, style, 1);
-      drawEye(ctx, pts(lm, RIGHT_LASH, w, h), pt(lm, RIGHT_IRIS, w, h), w, h, style, 2);
+      [
+        { lash: LEFT_LASH, iris: LEFT_IRIS },
+        { lash: RIGHT_LASH, iris: RIGHT_IRIS }
+      ].forEach(({ lash, iris }) => {
+        let inner = resample(pts3(lm, lash, w, h), 22, false);
+        if (specs.wing > 0) {
+          const a = inner[0];
+          const b = inner[Math.min(2, inner.length - 1)];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d = Math.hypot(dx, dy) || 1;
+          const tip = {
+            x: a.x + (dx / d) * specs.wing,
+            y: a.y + (dy / d) * specs.wing + w * 0.01,
+            z: a.z,
+            pu: a.pu,
+            pv: a.pv
+          };
+          inner = [tip].concat(inner);
+        }
+        const origin = lmPt(lm, iris, w, h);
+        const outer = offsetPts(inner, origin, specs.thick);
+        addStrip(inner, outer, style, {
+          mul: specs.mul,
+          soft: specs.soft,
+          feather: specs.feather,
+          stroke: 0,
+          ombre: 0
+        });
+      });
     }
 
     function applySplit(t) {
@@ -984,26 +924,6 @@
         `سلام عسل جان 🌿\n` +
         `می‌خوام نوبت رزرو کنم.\n\n` +
         `نام: ${name}\n` +
-        `شماره: ${phone}\n` +
-        `خدمات: ${serviceStyle}\n` +
-        `تاریخ دلخواه: ${prettyDate}`;
-      window.location.href = `https://wa.me/989150000000?text=${encodeURIComponent(message)}`;
-    });
-
-    let resizeTimer;
-    window.addEventListener("resize", () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        if (!state.image) return;
-        layoutCanvases();
-        if (state.landmarks) drawAll();
-        else drawOriginalOnly();
-      }, 120);
-    });
-  </script>
-</body>
-</html>
-  `نام: ${name}\n` +
         `شماره: ${phone}\n` +
         `خدمات: ${serviceStyle}\n` +
         `تاریخ دلخواه: ${prettyDate}`;
