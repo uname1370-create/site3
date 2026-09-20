@@ -85,6 +85,30 @@
       box-shadow: 0 8px 20px rgba(15, 61, 46, 0.22);
     }
     .style-chip.active { border-color: #D4AF37; }
+    .shade-bar {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #E8D5C4 0%, #8A5A3A 48%, #1A1008 100%);
+      outline: none;
+    }
+    .shade-bar::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #FDFCFB;
+      border: 1.5px solid #D4AF37;
+      box-shadow: 0 4px 10px rgba(0,0,0,.22);
+      cursor: pointer;
+    }
+    .shade-bar::-moz-range-thumb {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #FDFCFB;
+      border: 1.5px solid #D4AF37;
+      cursor: pointer;
+    }
     #compare { touch-action: none; user-select: none; }
     #sliderHandle { width: 44px; margin-left: -22px; cursor: ew-resize; }
     .handle-line { width: 2px; background: #FDFCFB; box-shadow: 0 0 12px rgba(0,0,0,.35); }
@@ -226,6 +250,15 @@
       <p class="mt-5 text-center text-[11px] font-medium text-brand-800/50">انتخاب مدل</p>
       <div id="styleRow" class="mt-2 flex flex-wrap gap-2"></div>
 
+      <div class="mt-4 rounded-2xl bg-cream-100 px-4 py-3">
+        <p class="mb-2 text-center text-[11px] font-medium text-brand-800/50">روشنایی و تیرگی رنگ</p>
+        <div class="flex items-center gap-3" dir="ltr">
+          <span class="text-[10px] font-medium text-brand-800/55">روشن</span>
+          <input id="shadeSlider" class="shade-bar min-h-0 w-full grow" type="range" min="0" max="100" value="55" />
+          <span class="text-[10px] font-medium text-brand-800/80">تیره</span>
+        </div>
+      </div>
+
       <button id="wantThis" type="button" class="gold-btn mt-5 flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold opacity-50" disabled>
         همین مدل رو میخوام! (رزرو نوبت)
       </button>
@@ -317,6 +350,7 @@
       displayW: 0,
       displayH: 0,
       split: 0.5,
+      shade: 0.55,
       crop: { x: 0, y: 0, w: 1, h: 1 }
     };
 
@@ -337,6 +371,7 @@
       sliderHandle: document.getElementById("sliderHandle"),
       processing: document.getElementById("processing"),
       styleRow: document.getElementById("styleRow"),
+      shadeSlider: document.getElementById("shadeSlider"),
       wantThis: document.getElementById("wantThis"),
       serviceStyle: document.getElementById("serviceStyle"),
       bookForm: document.getElementById("bookForm"),
@@ -729,15 +764,16 @@
       smoothPath(o, poly, true);
       o.clip();
       const g = o.createLinearGradient(inner.x, inner.y, outer.x, outer.y);
-      g.addColorStop(0, "rgba(168,132,104,0.12)");
-      g.addColorStop(0.22, "rgba(120,84,58,0.28)");
-      g.addColorStop(0.55, "rgba(72,44,28,0.55)");
-      g.addColorStop(1, style.kind === "natural" ? "rgba(48,30,20,0.62)" : "rgba(22,12,8,0.88)");
+      const sh = shade();
+      g.addColorStop(0, `rgba(168,132,104,${0.06 + sh * 0.16})`);
+      g.addColorStop(0.22, `rgba(120,84,58,${0.14 + sh * 0.28})`);
+      g.addColorStop(0.55, `rgba(72,44,28,${0.28 + sh * 0.42})`);
+      g.addColorStop(1, style.kind === "natural" ? `rgba(48,30,20,${0.32 + sh * 0.48})` : `rgba(22,12,8,${0.42 + sh * 0.56})`);
       o.fillStyle = g;
       o.fillRect(0, 0, w, h);
       o.restore();
-      const fillMul = style.kind === "bold" ? 0.58 : style.kind === "ombre" || style.kind === "combo" ? 0.52 : 0.42;
-      compositeLayer(main, w, h, "multiply", fillMul);
+      const fillMul = (style.kind === "bold" ? 0.58 : style.kind === "ombre" || style.kind === "combo" ? 0.52 : 0.42) * (0.4 + sh * 1.05);
+      compositeLayer(main, w, h, "multiply", Math.min(0.92, fillMul));
       compositeLayer(main, w, h, "soft-light", 0.12);
 
       const hairKinds = { hairstroke: 1, feather: 1, natural: 1, russian: 1, combo: 1, laminate: 1 };
@@ -781,7 +817,7 @@
           const sy = l.y + ny * thick * startT + py * along;
           const hair = thick * (style.kind === "laminate" ? 1.15 : style.kind === "feather" ? 0.95 : 0.78) * (0.55 + hash(seed + i + 3) * 0.4) * (t < 0.22 ? 0.7 : 1);
           const fadeHead = t < 0.18 ? 0.45 + t / 0.18 * 0.55 : 1;
-          o.globalAlpha = (style.kind === "natural" ? 0.22 : style.kind === "combo" ? 0.26 : 0.32) * fadeHead * (0.5 + hash(seed + i + 5) * 0.5);
+          o.globalAlpha = (style.kind === "natural" ? 0.22 : style.kind === "combo" ? 0.26 : 0.32) * fadeHead * (0.35 + sh * 0.9) * (0.5 + hash(seed + i + 5) * 0.5);
           o.lineWidth = Math.max(0.35, thick * (style.kind === "hairstroke" || style.kind === "russian" ? 0.085 : 0.07) * (0.7 + hash(seed + i + 11) * 0.5));
           o.beginPath();
           o.moveTo(sx, sy);
@@ -789,7 +825,7 @@
           o.stroke();
         }
         o.restore();
-        compositeLayer(main, w, h, "multiply", style.kind === "hairstroke" || style.kind === "russian" ? 0.42 : 0.3);
+        compositeLayer(main, w, h, "multiply", (style.kind === "hairstroke" || style.kind === "russian" ? 0.42 : 0.3) * (0.4 + sh * 1.1));
       }
     }
 
@@ -819,8 +855,9 @@
       o.fill();
       o.restore();
 
+      const sh = shade();
       compositeLayer(main, w, h, "soft-light", style.finish === "matte" ? 0.42 : 0.54);
-      compositeLayer(main, w, h, "multiply", style.alpha);
+      compositeLayer(main, w, h, "multiply", style.alpha * (0.45 + sh * 1.05));
 
       o.clearRect(0, 0, w, h);
       o.save();
@@ -1006,6 +1043,12 @@
         }
       });
     });
+
+    els.shadeSlider.addEventListener("input", () => {
+      state.shade = Number(els.shadeSlider.value) / 100;
+      if (state.landmarks) drawAll();
+    });
+    els.shadeSlider.addEventListener("pointerdown", (e) => e.stopPropagation());
 
     els.wantThis.addEventListener("click", () => {
       syncServiceField();
