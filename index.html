@@ -358,7 +358,12 @@
   <div id="toast" class="toast rounded-full bg-brand-800 px-4 py-2.5 text-center text-xs font-medium text-cream shadow-lg">متن رزرو کپی شد! در دایرکت Paste کنید ✨</div>
 
   <script type="module">
-    import { drawMicroblading } from "./pmu/microblading-engine.js";
+    // Load the advanced brow renderer lazily so a renderer/module failure never blocks
+    // the basic uploader, sample-photo buttons, or service selection UI.
+    let drawMicroblading = null;
+    let microbladingEnginePromise = import("./pmu/microblading-engine.js")
+      .then((mod) => { drawMicroblading = mod.drawMicroblading; return drawMicroblading; })
+      .catch((err) => { console.error("Microblading engine unavailable:", err); return null; });
 
     const SERVICE_LABELS = { brow: "ابرو", lip: "لب", liner: "خط چشم" };
     const STYLES = {
@@ -814,7 +819,15 @@
 
     function paintMakeup(ctx, lm, w, h, service, style) {
       if (service === "brow") {
-        drawMicroblading(ctx, lm, w, h, style, state.crop, shadeAmt(), 101);
+        if (drawMicroblading) {
+          drawMicroblading(ctx, lm, w, h, style, state.crop, shadeAmt(), 101);
+        } else {
+          // Keep the UI usable while the advanced engine is loading/if it fails.
+          const left = LEFT_BROW.map((i) => mapLm(lm, i, w, h));
+          const right = RIGHT_BROW.map((i) => mapLm(lm, i, w, h));
+          drawBrow(ctx, left, w, h, style, 101);
+          drawBrow(ctx, right, w, h, style, 202);
+        }
       } else if (service === "lip") {
         drawLips(ctx, lm, w, h, style);
       } else {
