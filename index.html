@@ -598,8 +598,15 @@
         document.getElementById("magic").scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (err) {
         console.error(err);
+        els.processing.classList.add("hidden");
+        els.processing.classList.remove("flex");
         els.placeholder.classList.add("hidden");
         els.compare.classList.remove("hidden");
+        els.wantThis.disabled = true;
+        els.wantThis.classList.add("opacity-50");
+        // Keep the selected image visible even if face detection/PMU processing fails.
+        // The user can still choose another service or retry without losing the sample.
+        els.placeholderText.textContent = "عکس انتخاب شد، اما پردازش چهره انجام نشد. دوباره تلاش کن.";
       } finally {
         els.processing.classList.add("hidden");
         els.processing.classList.remove("flex");
@@ -1127,12 +1134,29 @@
     });
 
     document.querySelectorAll(".preset-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        document.querySelectorAll(".preset-btn").forEach((b) => {
+          b.classList.remove("ring-2", "ring-gold-metal", "scale-[1.03]");
+          b.classList.add("ring-1");
+        });
+        btn.classList.remove("ring-1");
+        btn.classList.add("ring-2", "ring-gold-metal", "scale-[1.03]");
+
+        els.placeholder.classList.add("hidden");
+        els.compare.classList.remove("hidden");
+        els.placeholderText.textContent = "در حال آماده‌سازی عکس نمونه…";
+
         try {
-          await processImage(await loadImage(btn.dataset.src, btn.dataset.fallback));
+          const img = await loadImage(btn.dataset.src, btn.dataset.fallback);
+          await processImage(img);
+          document.getElementById("magic").scrollIntoView({ behavior: "smooth", block: "start" });
         } catch (err) {
           console.error(err);
-          els.placeholderText.textContent = "بارگذاری عکس نمونه ناموفق بود.";
+          els.placeholder.classList.remove("hidden");
+          els.compare.classList.add("hidden");
+          els.placeholderText.textContent = "بارگذاری عکس نمونه ناموفق بود. دوباره انتخاب کن.";
         }
       });
     });
