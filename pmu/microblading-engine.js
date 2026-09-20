@@ -35,6 +35,48 @@ function normalizedCrop(lm,ids,padX=.18,padY=.65){
   return {x,y,w:Math.max(.02,x2-x),h:Math.max(.02,y2-y)};
 }
 function sourcePoint(u,v,sw,sh){return{x:u*sw,y:v*sh};}
+function refPoint(lm,i,crop,w,h){const p=lm[i];return{x:((p.x-crop.x)/crop.w)*w,y:((p.y-crop.y)/crop.h)*h};}
+function referenceBrowMask(refLm,ids,crop,w,h){
+  const p=ids.map(i=>refPoint(refLm,i,crop,w,h));
+  const ring=[...p.slice(4,-1).reverse(),...p.slice(5)];
+  return ring;
+}
+function extractReferenceBrow(refImage,refLm,ids,crop){
+  const sw=refImage.naturalWidth||refImage.width,sh=refImage.naturalHeight||refImage.height;
+  const sx0=Math.max(0,Math.floor(crop.x*sw)),sy0=Math.max(0,Math.floor(crop.y*sh));
+  const swc=Math.max(2,Math.min(sw-sx0,Math.ceil(crop.w*sw))),shc=Math.max(2,Math.min(sh-sy0,Math.ceil(crop.h*sh)));
+  const source=document.createElement("canvas");source.width=swc;source.height=shc;
+  const ctx=source.getContext("2d",{willReadFrequently:true});
+  ctx.drawImage(refImage,sx0,sy0,swc,shc,0,0,swc,shc);
+  const image=ctx.getImageData(0,0,swc,shc),data=image.data,lums=[];
+  for(let i=0;i<data.length;i+=4){
+    const a=data[i+3];
+    if(a>20)lums.push(.2126*data[i]+.7152*data[i+1]+.0722*data[i+2]);
+  }
+  lums.sort((a,b)=>a-b);
+  const baseline=lums[Math.floor(lums.length*.68)]||150;
+  const ring=referenceBrowMask(refLm,ids,{x:sx0/sw,y:sy0/sh,w:swc/sw,h:shc/sh},swc,shc);
+  const poly=(x,y)=>{
+    let inside=false;
+    for(let i=0,j=poly.points.length-1;i<poly.points.length;j=i++){
+      const xi=poly.points[i].x,yi=poly.points[i].y,xj=poly.points[j].x,yj=poly.points[j].y;
+      const hit=((yi>y)!==(yj>y))&&(x<((xj-xi)*(y-yi))/(yj-yi||1e-9)+xi);
+      if(hit)inside=!inside;
+    }
+    return inside;
+  };
+  poly.points=ring;
+  for(let y=0;y<shc;y++)for(let x=0;x<swc;x++){
+    const i=(y*swc+x)*4;
+    if(!poly(x+.5,y+.5)){data[i+3]=0;continue;}
+    const lum=.2126*data[i]+.7152*data[i+1]+.0722*data[i+2];
+    const contrast=baseline-lum;
+    const alpha=clamp((contrast-7)/52)*.98;
+    data[i+3]=Math.round(data[i+3]*alpha);
+  }
+  ctx.putImageData(image,0,0);
+  return source;
+}
 function destinationPoint(g,u,v){
   const n=32,x=clamp(u)*n,ix=Math.min(n-1,Math.floor(x)),tx=x-ix;
   const y=clamp(v)*4,iy=Math.min(3,Math.floor(y)),ty=y-iy;
@@ -68,11 +110,9 @@ function tri(ctx,img,s0,s1,s2,d0,d1,d2){
   ctx.save();ctx.beginPath();ctx.moveTo(d0.x,d0.y);ctx.lineTo(d1.x,d1.y);ctx.lineTo(d2.x,d2.y);ctx.closePath();ctx.clip();
   ctx.setTransform(m.a,m.b,m.c,m.d,m.e,m.f);ctx.drawImage(img,0,0);ctx.restore();
 }
-function warpReference(ctx,img,sourceCrop,g,alpha){
-  const cols=32,rows=8,sw=img.naturalWidth||img.width,sh=img.naturalHeight||img.height;
-  const sx0=sourceCrop.x*sw,sy0=sourceCrop.y*sh,swc=sourceCrop.w*sw,shc=sourceCrop.h*sh;
-  const source=document.createElement("canvas");source.width=Math.max(2,Math.ceil(swc));source.height=Math.max(2,Math.ceil(shc));
-  source.getContext("2d").drawImage(img,sx0,sy0,swc,shc,0,0,source.width,source.height);
+function warpReference(ctx,img,sourceCrop,g,alpha,refLm,ids){
+  const cols=32,rows=8;
+  const source=extractReferenceBrow(img,refLm,ids,sourceCrop);
   ctx.save();ctx.globalAlpha=alpha;ctx.globalCompositeOperation="source-over";
   for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
     const u0=c/cols,u1=(c+1)/cols,v0=r/rows,v1=(r+1)/rows;
@@ -106,7 +146,7 @@ export function drawMicroblading(main,lm,w,h,style,crop,shade=.55,seed=1,referen
   for(const [ids,refCrop] of [[LEFT_BROW,refCropL],[RIGHT_BROW,refCropR]]){
     const userG=buildRows(geometry(lm,ids,w,h,crop));reduceOldBrow(main,userG,w,h);
     const layer=document.createElement("canvas");layer.width=Math.ceil(w);layer.height=Math.ceil(h);
-    const l=layer.getContext("2d");warpReference(l,referenceImage,refCrop,userG,.68+strength*.18);
+    const l=layer.getContext("2d");warpReference(l,referenceImage,refCrop,userG,.78+strength*.12,referenceLandmarks,ids);
     const mask=maskFor(userG,w,h);l.save();l.globalCompositeOperation="destination-in";l.drawImage(mask,0,0,w,h);l.restore();
     main.save();main.globalCompositeOperation="multiply";main.globalAlpha=.72;main.drawImage(layer,0,0,w,h);main.restore();
     main.save();main.globalCompositeOperation="soft-light";main.globalAlpha=.08+strength*.05;main.drawImage(layer,0,0,w,h);main.restore();
