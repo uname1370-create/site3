@@ -385,6 +385,10 @@
     function currentStyle() {
       return STYLES[state.service].find((s) => s.id === state.styleId) || STYLES[state.service][0];
     }
+    function shadeAmt() {
+      const n = Number(state.shade);
+      return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0.55;
+    }
     function syncServiceField() {
       els.serviceStyle.value = `${SERVICE_LABELS[state.service]} — ${currentStyle().name}`;
     }
@@ -491,6 +495,9 @@
     }
 
     async function processImage(img) {
+      if (img && img.decode) {
+        try { await img.decode(); } catch (_) {}
+      }
       state.image = img;
       state.landmarks = null;
       els.wantThis.disabled = true;
@@ -629,14 +636,22 @@
 
     function drawAll() {
       drawOriginalOnly();
-      paintMakeup(ctx2d(els.afterCanvas), state.landmarks, state.displayW, state.displayH, state.service, currentStyle());
+      if (!state.landmarks || !state.displayW) return;
+      try {
+        paintMakeup(ctx2d(els.afterCanvas), state.landmarks, state.displayW, state.displayH, state.service, currentStyle());
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     function mapLm(lm, i, w, h) {
       const c = state.crop || { x: 0, y: 0, w: 1, h: 1 };
+      const p = lm && lm[i];
+      if (!p) return { x: 0, y: 0 };
+      const cw = c.w || 1, ch = c.h || 1;
       return {
-        x: ((lm[i].x - c.x) / c.w) * w,
-        y: ((lm[i].y - c.y) / c.h) * h
+        x: ((p.x - c.x) / cw) * w,
+        y: ((p.y - c.y) / ch) * h
       };
     }
 
@@ -764,7 +779,7 @@
       smoothPath(o, poly, true);
       o.clip();
       const g = o.createLinearGradient(inner.x, inner.y, outer.x, outer.y);
-      const sh = shade();
+      const sh = shadeAmt();
       g.addColorStop(0, `rgba(168,132,104,${0.06 + sh * 0.16})`);
       g.addColorStop(0.22, `rgba(120,84,58,${0.14 + sh * 0.28})`);
       g.addColorStop(0.55, `rgba(72,44,28,${0.28 + sh * 0.42})`);
@@ -855,7 +870,7 @@
       o.fill();
       o.restore();
 
-      const sh = shade();
+      const sh = shadeAmt();
       compositeLayer(main, w, h, "soft-light", style.finish === "matte" ? 0.42 : 0.54);
       compositeLayer(main, w, h, "multiply", style.alpha * (0.45 + sh * 1.05));
 
@@ -961,20 +976,21 @@
         const poly = taperedRibbon(ribbonLine, origin, spec.inner, spec.outer);
         const innerPt = ribbonLine[0];
         const outerPt = ribbonLine[ribbonLine.length - 1];
+        const sh = shadeAmt();
         const o = ensureLayer(w, h);
         o.clearRect(0, 0, w, h);
         o.save();
         o.filter = `blur(${spec.blur}px)`;
         const g = o.createLinearGradient(innerPt.x, innerPt.y, outerPt.x, outerPt.y);
-        g.addColorStop(0, "rgba(70,52,40,0.28)");
-        g.addColorStop(0.4, "rgba(28,18,12,0.7)");
-        g.addColorStop(1, "rgba(6,4,2,0.96)");
+        g.addColorStop(0, `rgba(70,52,40,${0.1 + sh * 0.4})`);
+        g.addColorStop(0.4, `rgba(28,18,12,${0.3 + sh * 0.55})`);
+        g.addColorStop(1, `rgba(6,4,2,${0.45 + sh * 0.55})`);
         o.fillStyle = g;
         smoothPath(o, poly, true);
         o.fill();
         o.restore();
-        compositeLayer(main, w, h, "multiply", spec.alpha);
-        compositeLayer(main, w, h, "soft-light", 0.1);
+        compositeLayer(main, w, h, "multiply", Math.min(0.98, spec.alpha * (0.25 + sh * 1.15)));
+        compositeLayer(main, w, h, "soft-light", 0.08 + sh * 0.12);
       });
     }
 
