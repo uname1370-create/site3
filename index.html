@@ -472,19 +472,19 @@
       const basis = state.service === "brow" ? "basis-[46%]" : (list.length === 4 ? "basis-[46%]" : "basis-[30%]");
       els.styleRow.innerHTML = list.map((s) => {
         const visual = state.service === "brow"
-          ? \`
+          ? `
             <span class="relative mb-2 block aspect-[4/3] overflow-hidden rounded-xl bg-brand-950/10">
-              <img src="\${s.reference}" alt="\${s.name}" class="h-full w-full object-cover" crossorigin="anonymous" />
-              <span class="absolute inset-x-1.5 bottom-1.5 rounded-full bg-black/45 px-2 py-1 text-[9px] font-medium text-white backdrop-blur-sm">\${s.name}</span>
-            </span>\`
-          : \`\${state.service === "lip" ? \`<span class="mx-auto mb-1.5 block h-3 w-3 rounded-full ring-1 ring-black/10" style="background:\${s.color}"></span>\` : ""}\`;
-        return \`
-        <button type="button" data-style="\${s.id}"
-          class="style-chip chip \${basis} grow rounded-2xl px-2 py-2.5 text-center \${s.id === state.styleId ? "active" : ""}">
-          \${visual}
-          \${state.service === "brow" ? "" : \`<span class="block text-[12px] font-bold leading-5">\${s.name}</span>
-          <span class="mt-0.5 block text-[10px] font-light leading-4 opacity-70">\${s.hint}</span>\`}
-        </button>\`;
+              <img src="${s.reference}" alt="${s.name}" class="h-full w-full object-cover" crossorigin="anonymous" />
+              <span class="absolute inset-x-1.5 bottom-1.5 rounded-full bg-black/45 px-2 py-1 text-[9px] font-medium text-white backdrop-blur-sm">${s.name}</span>
+            </span>`
+          : `${state.service === "lip" ? `<span class="mx-auto mb-1.5 block h-3 w-3 rounded-full ring-1 ring-black/10" style="background:${s.color}"></span>` : ""}`;
+        return `
+        <button type="button" data-style="${s.id}"
+          class="style-chip chip ${basis} grow rounded-2xl px-2 py-2.5 text-center ${s.id === state.styleId ? "active" : ""}">
+          ${visual}
+          ${state.service === "brow" ? "" : `<span class="block text-[12px] font-bold leading-5">${s.name}</span>
+          <span class="mt-0.5 block text-[10px] font-light leading-4 opacity-70">${s.hint}</span>`}
+        </button>`;
       }).join("");
       els.styleRow.querySelectorAll(".style-chip").forEach((btn) => {
         btn.addEventListener("click", async () => {
