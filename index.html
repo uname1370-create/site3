@@ -839,7 +839,7 @@
 
     function paintMakeup(ctx, lm, w, h, service, style) {
       if (service === "brow") {
-        if (drawMicroblading) {
+        if (drawMicroblading && state.referenceImage && state.referenceLandmarks) {
           drawMicroblading(ctx, lm, w, h, style, state.crop, shadeAmt(), 101, state.referenceImage, state.referenceLandmarks);
         } else {
           // Keep the UI usable while the advanced engine is loading/if it fails.
