@@ -367,14 +367,10 @@
 
     const SERVICE_LABELS = { brow: "ابرو", lip: "لب", liner: "خط چشم" };
     const STYLES = {
+      // Eyebrow selection is reference-first: the card itself is the real artist sample.
       brow: [
-        { id: "natural", name: "طبیعی", hint: "هاشور خیلی ظریف", kind: "natural", color: "#6A4A38" },
-        { id: "micro", name: "میکروبلیدینگ", hint: "تار مو روی ابرو", kind: "hairstroke", color: "#3E2A1C" },
-        { id: "phibrows", name: "فیبروز", hint: "الگوی فی، قوس طلایی", kind: "phibrows", color: "#2C1C12" },
-        { id: "powder", name: "شیدینگ پودری", hint: "سایه سر روشن دم تیره", kind: "ombre", color: "#4A3122" },
-        { id: "combo", name: "ترکیبی", hint: "هاشور + شیدینگ", kind: "combo", color: "#3A2618" },
-        { id: "laminate", name: "لمینیت", hint: "تار شانه خورده به بالا", kind: "laminate", color: "#4A3224" },
-        { id: "bold", name: "بولد بروز", hint: "پر، مشخص، دم تیره", kind: "bold", color: "#2A1810" }
+        { id: "ref-m2", name: "نمونه اصلی ۱", hint: "همین نمونه روی چهره فیت می‌شود", kind: "hairstroke", color: "#3E2A1C", reference: "m2.png" },
+        { id: "ref-m3", name: "نمونه اصلی ۲", hint: "همین نمونه روی چهره فیت می‌شود", kind: "hairstroke", color: "#3E2A1C", reference: "m3.png" }
       ],
       lip: [
         { id: "nude", name: "نود رزی", hint: "ساتین ملایم", color: "#C9897B", finish: "satin", alpha: 0.28 },
@@ -410,7 +406,7 @@
 
     const state = {
       service: "brow",
-      styleId: "micro",
+      styleId: "ref-m2",
       image: null,
       landmarks: null,
       displayW: 0,
@@ -420,6 +416,7 @@
       fullView: false,
       referenceImage: null,
       referenceLandmarks: null,
+      referenceSrc: "m2.png",
       crop: { x: 0, y: 0, w: 1, h: 1 }
     };
 
@@ -472,24 +469,41 @@
     function renderStyles() {
       const list = STYLES[state.service];
       if (!list.some((s) => s.id === state.styleId)) state.styleId = list[0].id;
-      const basis = list.length === 4 ? "basis-[46%]" : "basis-[30%]";
-      els.styleRow.innerHTML = list.map((s) => `
-        <button type="button" data-style="${s.id}"
-          class="style-chip chip ${basis} grow rounded-2xl px-2 py-2.5 text-center ${s.id === state.styleId ? "active" : ""}">
-          ${state.service === "lip" ? `<span class="mx-auto mb-1.5 block h-3 w-3 rounded-full ring-1 ring-black/10" style="background:${s.color}"></span>` : ""}
-          <span class="block text-[12px] font-bold leading-5">${s.name}</span>
-          <span class="mt-0.5 block text-[10px] font-light leading-4 opacity-70">${s.hint}</span>
-        </button>`).join("");
+      const basis = state.service === "brow" ? "basis-[46%]" : (list.length === 4 ? "basis-[46%]" : "basis-[30%]");
+      els.styleRow.innerHTML = list.map((s) => {
+        const visual = state.service === "brow"
+          ? \`
+            <span class="relative mb-2 block aspect-[4/3] overflow-hidden rounded-xl bg-brand-950/10">
+              <img src="\${s.reference}" alt="\${s.name}" class="h-full w-full object-cover" crossorigin="anonymous" />
+              <span class="absolute inset-x-1.5 bottom-1.5 rounded-full bg-black/45 px-2 py-1 text-[9px] font-medium text-white backdrop-blur-sm">\${s.name}</span>
+            </span>\`
+          : \`\${state.service === "lip" ? \`<span class="mx-auto mb-1.5 block h-3 w-3 rounded-full ring-1 ring-black/10" style="background:\${s.color}"></span>\` : ""}\`;
+        return \`
+        <button type="button" data-style="\${s.id}"
+          class="style-chip chip \${basis} grow rounded-2xl px-2 py-2.5 text-center \${s.id === state.styleId ? "active" : ""}">
+          \${visual}
+          \${state.service === "brow" ? "" : \`<span class="block text-[12px] font-bold leading-5">\${s.name}</span>
+          <span class="mt-0.5 block text-[10px] font-light leading-4 opacity-70">\${s.hint}</span>\`}
+        </button>\`;
+      }).join("");
       els.styleRow.querySelectorAll(".style-chip").forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", async () => {
           state.styleId = btn.dataset.style;
+          state.referenceSrc = currentStyle().reference || "m2.png";
+          state.referenceImage = null;
+          state.referenceLandmarks = null;
+          referencePromise = null;
           renderStyles();
           syncServiceField();
-          if (state.landmarks) drawAll();
+          if (state.landmarks && state.service === "brow") {
+            await ensureReferenceBrow();
+            drawAll();
+          } else if (state.landmarks) {
+            drawAll();
+          }
         });
       });
     }
-
     els.serviceBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         state.service = btn.dataset.service;
@@ -534,15 +548,21 @@
     initLandmarker();
 
     async function ensureReferenceBrow(){
-      if(state.referenceImage && state.referenceLandmarks) return true;
+      const src = currentStyle().reference || state.referenceSrc || "m2.png";
+      if(state.referenceImage && state.referenceLandmarks && state.referenceSrc === src) return true;
       if(referencePromise) return referencePromise;
+      state.referenceSrc = src;
       referencePromise=(async()=>{
         try{
-          const ref=await loadImage("m2.png");
+          const ref=await loadImage(src);
           await initLandmarker();
           const rr=landmarker.detect(ref);
           const refFace=rr.faceLandmarks && rr.faceLandmarks[0];
-          if(refFace){ state.referenceImage=ref; state.referenceLandmarks=refFace; return true; }
+          if(refFace){
+            state.referenceImage=ref;
+            state.referenceLandmarks=refFace;
+            return true;
+          }
         }catch(err){ console.warn("Reference brow unavailable:",err); }
         return false;
       })();
