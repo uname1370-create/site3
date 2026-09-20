@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0F3D2E" />
+  <title>عسل رجبی | پنل مدیریت آتلانتیس</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 950: '#071912', 900: '#0A2A20', 800: '#0F3D2E', 700: '#164A38', 600: '#1A5C45' },
+            cream: { DEFAULT: '#FDFCFB', 100: '#F7F3EE', 200: '#EFE8DF' },
+            gold: { DEFAULT: '#C9A07A', light: '#E8D5C4', metal: '#D4AF37', rose: '#B76E79', deep: '#8A6A4A' }
+          },
+          fontFamily: { vazir: ['Vazirmatn', 'Tahoma', 'sans-serif'] }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: Vazirmatn, Tahoma, sans-serif; background: #071912; color: #0F3D2E; }
+    .glass {
+      background: rgba(253, 252, 251, 0.78);
+      border: 1px solid rgba(201, 160, 122, 0.22);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.18);
+    }
+    .gold-line { height: 1px; background: linear-gradient(90deg, transparent, #D4AF37, transparent); }
+    .field {
+      background: #FDFCFB;
+      border: 1px solid rgba(15, 61, 46, 0.12);
+      min-height: 48px;
+    }
+    .field:focus { outline: none; border-color: #C9A07A; box-shadow: 0 0 0 3px rgba(201,160,122,.22); }
+    .gold-btn {
+      background: linear-gradient(135deg, #E8D5C4 0%, #D4AF37 42%, #C9A07A 100%);
+      color: #0F3D2E;
+    }
+    .chip-wait { background: rgba(183,110,121,.14); color: #8A4A55; }
+    .chip-call { background: rgba(201,160,122,.22); color: #6A4A28; }
+    .chip-ok { background: rgba(26,92,69,.14); color: #0F3D2E; }
+    .nav-btn.active { background: #0F3D2E; color: #FDFCFB; }
+    #gate { background: radial-gradient(1200px 600px at 80% 0%, rgba(201,160,122,.18), transparent 55%), #071912; }
+  </style>
+</head>
+<body class="font-vazir antialiased min-h-screen">
+
+  <div id="gate" class="fixed inset-0 z-50 flex items-center justify-center px-5">
+    <div class="glass w-full max-w-sm rounded-3xl p-7">
+      <p class="text-center text-[11px] tracking-[0.28em] text-gold-deep">ATLANTIS  ·  ADMIN</p>
+      <h1 class="mt-2 text-center text-xl font-extrabold text-brand-800">ورود به پنل عسل رجبی</h1>
+      <div class="gold-line my-5"></div>
+      <label class="mb-1.5 block text-xs text-brand-800/70">رمز عبور</label>
+      <input id="pw" type="password" class="field w-full rounded-2xl px-4 text-sm" placeholder="••••" />
+      <p id="pwErr" class="mt-2 hidden text-xs text-gold-rose">رمز نادرست است.</p>
+      <button id="loginBtn" type="button" class="gold-btn mt-5 flex min-h-[50px] w-full items-center justify-center rounded-2xl text-sm font-bold">ورود</button>
+    </div>
+  </div>
+
+  <div id="app" class="hidden min-h-screen bg-[#0A2A20]">
+    <header class="sticky top-0 z-20 border-b border-white/5 bg-brand-900/80 backdrop-blur-xl">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div>
+          <p class="text-[10px] tracking-[0.22em] text-gold-light">ASAL RAJABI</p>
+          <h1 class="text-[15px] font-extrabold text-cream sm:text-lg">عسل رجبی | پنل مدیریت آتلانتیس</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="hidden h-10 w-10 overflow-hidden rounded-full ring-1 ring-gold/40 sm:block">
+            <img src="asalrajabi.png" alt="" class="h-full w-full object-cover" onerror="this.style.display='none'" />
+          </div>
+          <button id="logoutBtn" type="button" class="rounded-2xl border border-white/10 px-3 py-2 text-xs text-cream/80">خروج</button>
+        </div>
+      </div>
+      <nav class="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pb-3 sm:px-6">
+        <button type="button" data-tab="dash" class="nav-btn active whitespace-nowrap rounded-2xl px-3 py-2 text-xs font-semibold text-cream/80">داشبورد</button>
+        <button type="button" data-tab="book" class="nav-btn whitespace-nowrap rounded-2xl px-3 py-2 text-xs font-semibold text-cream/80">رزروها</button>
+        <button type="button" data-tab="content" class="nav-btn whitespace-nowrap rounded-2xl px-3 py-2 text-xs font-semibold text-cream/80">محتوای سایت</button>
+      </nav>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+      <section id="tab-dash" class="space-y-5">
+        <div class="grid gap-3 sm:grid-cols-3">
+          <article class="glass rounded-3xl p-5">
+            <p class="text-[11px] text-brand-800/55">بازدید امروز</p>
+            <p class="mt-1 text-3xl font-extrabold text-brand-800">۱۴۲</p>
+            <p class="mt-2 text-xs text-brand-600">+۱۲٪ نسبت به دیروز</p>
+          </article>
+          <article class="glass rounded-3xl p-5">
+            <p class="text-[11px] text-brand-800/55">رزروهای جدید</p>
+            <p class="mt-1 text-3xl font-extrabold text-brand-800">۱۸</p>
+            <p class="mt-2 text-xs text-gold-rose">نیاز به پیگیری</p>
+          </article>
+          <article class="glass rounded-3xl p-5">
+            <p class="text-[11px] text-brand-800/55">محبوب‌ترین خدمت</p>
+            <p class="mt-1 text-2xl font-extrabold text-brand-800">شیدینگ لب</p>
+            <p class="mt-2 text-xs text-brand-800/60">۴۸٪ تست‌ها</p>
+          </article>
+        </div>
+        <div class="grid gap-4 lg:grid-cols-5">
+          <div class="glass rounded-3xl p-5 lg:col-span-3">
+            <h2 class="text-sm font-bold text-brand-800">روند بازدید و تست‌های هفته</h2>
+            <div class="mt-4 h-56"><canvas id="lineChart"></canvas></div>
+          </div>
+          <div class="glass rounded-3xl p-5 lg:col-span-2">
+            <h2 class="text-sm font-bold text-brand-800">توزیع محبوبیت خدمات</h2>
+            <div class="mx-auto mt-3 h-56 max-w-[240px]"><canvas id="donutChart"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-book" class="hidden">
+        <div class="glass overflow-hidden rounded-3xl">
+          <div class="flex items-center justify-between px-5 py-4">
+            <h2 class="text-sm font-bold text-brand-800">جدول رزروها و لیدها</h2>
+            <span class="text-[11px] text-brand-800/50">داده نمایشی</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-[720px] w-full text-right text-sm">
+              <thead class="bg-brand-800 text-cream">
+                <tr class="text-[11px] font-medium">
+                  <th class="px-4 py-3">نام مشتری</th>
+                  <th class="px-4 py-3">شماره تماس</th>
+                  <th class="px-4 py-3">خدمت</th>
+                  <th class="px-4 py-3">مدل</th>
+                  <th class="px-4 py-3">تاریخ</th>
+                  <th class="px-4 py-3">وضعیت</th>
+                  <th class="px-4 py-3">عملیات</th>
+                </tr>
+              </thead>
+              <tbody id="bookBody" class="divide-y divide-brand-800/8 bg-cream/70"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-content" class="hidden space-y-4">
+        <div class="glass rounded-3xl p-5">
+          <h2 class="text-sm font-bold text-brand-800">مدیریت نمونه‌کارها و خدمات</h2>
+          <p class="mt-1 text-xs font-light text-brand-800/55">تغییرات در این دستگاه ذخیره می‌شود (نمایشی).</p>
+          <form id="contentForm" class="mt-5 grid gap-3 sm:grid-cols-2">
+            <div>
+              <label class="mb-1 block text-[11px] text-brand-800/70">آدرس عکس نمونه ۱</label>
+              <input name="preset1" class="field w-full rounded-2xl px-4 text-sm" />
+            </div>
+            <div>
+              <label class="mb-1 block text-[11px] text-brand-800/70">آدرس عکس نمونه ۲</label>
+              <input name="preset2" class="field w-full rounded-2xl px-4 text-sm" />
+            </div>
+            <div>
+              <label class="mb-1 block text-[11px] text-brand-800/70">عنوان خدمت ابرو</label>
+              <input name="titleBrow" class="field w-full rounded-2xl px-4 text-sm" />
+            </div>
+            <div>
+              <label class="mb-1 block text-[11px] text-brand-800/70">عنوان خدمت لب</label>
+              <input name="titleLip" class="field w-full rounded-2xl px-4 text-sm" />
+            </div>
+            <div>
+              <label class="mb-1 block text-[11px] text-brand-800/70">عنوان خدمت خط چشم</label>
+              <input name="titleLiner" class="field w-full rounded-2xl px-4 text-sm" />
+            </div>
+            <div>
+              <label class="mb-1 block text-[11px] text-brand-800/70">قیمت پایه (تومان)</label>
+              <input name="price" class="field w-full rounded-2xl px-4 text-sm" />
+            </div>
+            <button type="submit" class="gold-btn sm:col-span-2 flex min-h-[50px] items-center justify-center rounded-2xl text-sm font-bold">ذخیره تغییرات</button>
+          </form>
+          <p id="savedNote" class="mt-3 hidden text-center text-xs text-brand-600">ذخیره شد.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const PASS = "1234";
+    const KEY = "asal-admin";
+    const CONTENT_KEY = "asal-content";
+
+    const bookings = [
+      { name: "سارا محمدی", phone: "09121234567", service: "لب", style: "نود رزی", date: "۱۴۰۴/۰۷/۰۲", status: "wait" },
+      { name: "نیلوفر احمدی", phone: "09351239876", service: "ابرو", style: "فیبروز", date: "۱۴۰۴/۰۷/۰۳", status: "call" },
+      { name: "مهسا کریمی", phone: "09199881234", service: "خط چشم", style: "گربه‌ای", date: "۱۴۰۴/۰۷/۰۴", status: "ok" },
+      { name: "هستی رضایی", phone: "09012340011", service: "لب", style: "آجری", date: "۱۴۰۴/۰۷/۰۵", status: "wait" },
+      { name: "یاسمن نوری", phone: "09135550909", service: "ابرو", style: "شیدینگ پودری", date: "۱۴۰۴/۰۷/۰۶", status: "call" }
+    ];
+
+    const statusMap = {
+      wait: { label: "در انتظار", cls: "chip-wait" },
+      call: { label: "تماس گرفته شد", cls: "chip-call" },
+      ok: { label: "تایید شده", cls: "chip-ok" }
+    };
+
+    const gate = document.getElementById("gate");
+    const app = document.getElementById("app");
+
+    function unlock() {
+      gate.classList.add("hidden");
+      app.classList.remove("hidden");
+      drawCharts();
+    }
+
+    if (sessionStorage.getItem(KEY) === "1") unlock();
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      if (document.getElementById("pw").value === PASS) {
+        sessionStorage.setItem(KEY, "1");
+        unlock();
+      } else {
+        document.getElementById("pwErr").classList.remove("hidden");
+      }
+    });
+    document.getElementById("pw").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("loginBtn").click();
+    });
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      sessionStorage.removeItem(KEY);
+      location.reload();
+    });
+
+    document.querySelectorAll(".nav-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        ["dash", "book", "content"].forEach((id) => {
+          document.getElementById("tab-" + id).classList.toggle("hidden", btn.dataset.tab !== id);
+        });
+      });
+    });
+
+    function waLink(phone) {
+      const n = phone.replace(/^0/, "98");
+      return `https://wa.me/${n}`;
+    }
+
+    function renderTable() {
+      document.getElementById("bookBody").innerHTML = bookings.map((b, i) => {
+        const st = statusMap[b.status];
+        return `<tr class="text-[13px] text-brand-800">
+          <td class="px-4 py-3 font-semibold">${b.name}</td>
+          <td class="px-4 py-3 dir-ltr">${b.phone}</td>
+          <td class="px-4 py-3">${b.service}</td>
+          <td class="px-4 py-3">${b.style}</td>
+          <td class="px-4 py-3">${b.date}</td>
+          <td class="px-4 py-3"><span class="${st.cls} rounded-full px-2.5 py-1 text-[10px] font-bold">${st.label}</span></td>
+          <td class="px-4 py-3">
+            <div class="flex flex-wrap gap-1.5">
+              <a class="rounded-xl bg-brand-800 px-2.5 py-1.5 text-[10px] text-cream" href="${waLink(b.phone)}" target="_blank" rel="noopener">💬 چت واتساپ</a>
+              <a class="rounded-xl bg-gold-rose/90 px-2.5 py-1.5 text-[10px] text-white" href="https://ig.me/m/asalrajabi_pmu" target="_blank" rel="noopener">📸 دایرکت اینستا</a>
+            </div>
+          </td>
+        </tr>`;
+      }).join("");
+    }
+    renderTable();
+
+    const defaultContent = {
+      preset1: "m2.png",
+      preset2: "m3.png",
+      titleBrow: "ابرو",
+      titleLip: "لب",
+      titleLiner: "خط چشم",
+      price: "3500000"
+    };
+
+    function loadContent() {
+      let data = defaultContent;
+      try { data = { ...defaultContent, ...JSON.parse(localStorage.getItem(CONTENT_KEY) || "{}") }; } catch (_) {}
+      const form = document.getElementById("contentForm");
+      Object.keys(defaultContent).forEach((k) => { form[k].value = data[k]; });
+    }
+    loadContent();
+
+    document.getElementById("contentForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const data = Object.fromEntries(fd.entries());
+      localStorage.setItem(CONTENT_KEY, JSON.stringify(data));
+      const note = document.getElementById("savedNote");
+      note.classList.remove("hidden");
+      setTimeout(() => note.classList.add("hidden"), 1800);
+    });
+
+    let chartsReady = false;
+    function drawCharts() {
+      if (chartsReady || typeof Chart === "undefined") return;
+      chartsReady = true;
+      const gold = "#C9A07A";
+      const green = "#1A5C45";
+      new Chart(document.getElementById("lineChart"), {
+        type: "line",
+        data: {
+          labels: ["ش", "ی", "د", "س", "چ", "پ", "ج"],
+          datasets: [
+            { label: "بازدید", data: [90, 110, 98, 140, 132, 150, 142], borderColor: green, backgroundColor: "rgba(26,92,69,.12)", fill: true, tension: 0.4, pointRadius: 3 },
+            { label: "تست مجازی", data: [20, 28, 24, 40, 36, 44, 41], borderColor: gold, backgroundColor: "rgba(201,160,122,.12)", fill: true, tension: 0.4, pointRadius: 3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { font: { family: "Vazirmatn" } } } },
+          scales: { y: { beginAtZero: true, grid: { color: "rgba(15,61,46,.06)" } }, x: { grid: { display: false } } }
+        }
+      });
+      new Chart(document.getElementById("donutChart"), {
+        type: "doughnut",
+        data: {
+          labels: ["ابرو ۴۲٪", "لب ۳۸٪", "خط چشم ۲۰٪"],
+          datasets: [{ data: [42, 38, 20], backgroundColor: ["#0F3D2E", "#C9A07A", "#B76E79"], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: "bottom", labels: { font: { family: "Vazirmatn", size: 11 } } } },
+          cutout: "62%"
+        }
+      });
+    }
+  </script>
+</body>
+</html>
