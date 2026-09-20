@@ -176,11 +176,11 @@
 
       <p class="mt-6 text-center text-xs font-medium text-brand-800/55">یا با عکس نمونه تست کن</p>
       <div class="mt-3 flex justify-center gap-3">
-        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://raw.githubusercontent.com/uname1370-create/site3/arena/01a0bc02-site3/m2.png" data-fallback="m2.png">
-          <img src="https://raw.githubusercontent.com/uname1370-create/site3/arena/01a0bc02-site3/m2.png" alt="نمونه ۱" class="h-full w-full object-cover" crossorigin="anonymous" onerror="this.onerror=null;this.removeAttribute('crossorigin');this.src='m2.png'" />
+        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="m2.png">
+          <img src="m2.png" alt="نمونه ۱" class="h-full w-full object-cover" crossorigin="anonymous" />
         </button>
-        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://raw.githubusercontent.com/uname1370-create/site3/arena/01a0bc02-site3/m3.png" data-fallback="m3.png">
-          <img src="https://raw.githubusercontent.com/uname1370-create/site3/arena/01a0bc02-site3/m3.png" alt="نمونه ۲" class="h-full w-full object-cover" crossorigin="anonymous" onerror="this.onerror=null;this.removeAttribute('crossorigin');this.src='m3.png'" />
+        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="m3.png">
+          <img src="m3.png" alt="نمونه ۲" class="h-full w-full object-cover" crossorigin="anonymous" />
         </button>
       </div>
     </section>
@@ -290,16 +290,19 @@
       ]
     };
 
-    const LIP_OUTER = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 181, 91, 146];
+    const LIP_OUTER = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146];
     const LIP_INNER = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
+    const LIP_UPPER = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291];
     const LEFT_BROW = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
     const RIGHT_BROW = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
     const LEFT_LASH = [33, 246, 161, 160, 159, 158, 157, 173, 133];
     const RIGHT_LASH = [263, 466, 388, 387, 386, 385, 384, 398, 362];
+    const LEFT_LOWER_LID = [33, 7, 163, 144];
+    const RIGHT_LOWER_LID = [263, 249, 390, 373];
     const LEFT_IRIS = 468;
     const RIGHT_IRIS = 473;
     const BROW_ZONE = LEFT_BROW.concat(RIGHT_BROW);
-    const EYE_ZONE = LEFT_LASH.concat(RIGHT_LASH, [LEFT_IRIS, RIGHT_IRIS]);
+    const EYE_ZONE = LEFT_LASH.concat(RIGHT_LASH, LEFT_LOWER_LID, RIGHT_LOWER_LID, [LEFT_IRIS, RIGHT_IRIS]);
 
     const state = {
       service: "brow",
@@ -376,6 +379,7 @@
         syncServiceField();
         if (state.landmarks) {
           updateCrop();
+          applySplit(0.5);
           layoutCanvases();
           drawAll();
         }
@@ -471,6 +475,7 @@
         }
         state.landmarks = face;
         updateCrop();
+        applySplit(0.5);
         layoutCanvases();
         drawAll();
         els.wantThis.disabled = false;
@@ -537,9 +542,9 @@
         state.crop = { x: 0, y: 0, w: 1, h: 1 };
         return;
       }
-      if (state.service === "brow") state.crop = padBox(boxOf(lm, BROW_ZONE), 0.38, 1.15);
-      else if (state.service === "lip") state.crop = padBox(boxOf(lm, LIP_OUTER), 0.32, 0.55);
-      else state.crop = padBox(boxOf(lm, EYE_ZONE), 0.42, 1.05);
+      if (state.service === "brow") state.crop = padBox(boxOf(lm, BROW_ZONE), 0.18, 0.55);
+      else if (state.service === "lip") state.crop = padBox(boxOf(lm, LIP_OUTER), 0.28, 0.48);
+      else state.crop = padBox(boxOf(lm, EYE_ZONE), 0.28, 0.72);
     }
 
     function layoutCanvases() {
@@ -600,25 +605,27 @@
     }
 
     function addSmooth(ctx, points, closed) {
-      if (points.length < 2) return;
-      ctx.moveTo(points[0].x, points[0].y);
+      if (!points || points.length < 2) return;
       if (points.length === 2) {
+        ctx.moveTo(points[0].x, points[0].y);
         ctx.lineTo(points[1].x, points[1].y);
         return;
       }
-      for (let i = 0; i < points.length - 1; i++) {
-        const p0 = points[i];
-        const p1 = points[i + 1];
-        ctx.quadraticCurveTo(p0.x, p0.y, (p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
+      const pts = closed
+        ? [points[points.length - 1], ...points, points[0], points[1]]
+        : [points[0], ...points, points[points.length - 1]];
+      ctx.moveTo(pts[1].x, pts[1].y);
+      for (let i = 1; i < pts.length - 2; i++) {
+        const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2];
+        ctx.bezierCurveTo(
+          p1.x + (p2.x - p0.x) / 6,
+          p1.y + (p2.y - p0.y) / 6,
+          p2.x - (p3.x - p1.x) / 6,
+          p2.y - (p3.y - p1.y) / 6,
+          p2.x, p2.y
+        );
       }
-      const last = points[points.length - 1];
-      if (closed) {
-        const first = points[0];
-        ctx.quadraticCurveTo(last.x, last.y, (last.x + first.x) / 2, (last.y + first.y) / 2);
-        ctx.closePath();
-      } else {
-        ctx.lineTo(last.x, last.y);
-      }
+      if (closed) ctx.closePath();
     }
 
     function smoothPath(ctx, points, closed) {
@@ -627,6 +634,8 @@
     }
 
     function lerpPt(curve, t) {
+      if (!curve.length) return { x: 0, y: 0 };
+      if (curve.length === 1) return { x: curve[0].x, y: curve[0].y };
       const n = curve.length - 1;
       const f = Math.max(0, Math.min(1, t)) * n;
       const i = Math.min(n - 1, Math.floor(f));
@@ -635,6 +644,21 @@
         x: curve[i].x + (curve[i + 1].x - curve[i].x) * u,
         y: curve[i].y + (curve[i + 1].y - curve[i].y) * u
       };
+    }
+
+    function densify(curve, steps) {
+      const out = [];
+      for (let i = 0; i <= steps; i++) out.push(lerpPt(curve, i / steps));
+      return out;
+    }
+
+    function featSize(points) {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const p of points) {
+        minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y);
+      }
+      return { w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
     }
 
     function hash(i) {
@@ -666,9 +690,8 @@
       const inner = { x: (p[4].x + p[5].x) / 2, y: (p[4].y + p[5].y) / 2 };
       const outer = { x: (p[0].x + p[9].x) / 2, y: (p[0].y + p[9].y) / 2 };
       const len = Math.hypot(outer.x - inner.x, outer.y - inner.y) || 1;
-      const tail = kind === "bold" ? 0.28 : kind === "ombre" ? 0.32 : kind === "hairstroke" ? 0.2 : kind === "feather" ? 0.14 : 0.1;
-      const lift = kind === "bold" ? 0.28 : kind === "hairstroke" ? 0.18 : kind === "ombre" ? 0.14 : 0.08;
-      const thick = kind === "bold" ? 0.22 : kind === "ombre" ? 0.2 : kind === "hairstroke" ? 0.16 : 0.12;
+      const tail = kind === "bold" ? 0.07 : kind === "ombre" ? 0.08 : kind === "hairstroke" ? 0.045 : 0.015;
+      const lift = kind === "bold" ? 0.055 : kind === "hairstroke" ? 0.035 : kind === "ombre" ? 0.03 : 0.01;
       function push(pt, from, amt) {
         const dx = pt.x - from.x, dy = pt.y - from.y;
         const d = Math.hypot(dx, dy) || 1;
@@ -676,107 +699,111 @@
         pt.y += (dy / d) * len * amt;
       }
       push(p[0], inner, tail);
-      push(p[9], inner, tail * 0.88);
-      push(p[1], inner, tail * 0.42);
-      push(p[8], inner, tail * 0.36);
+      push(p[9], inner, tail * 0.55);
       p[2].y -= len * lift;
-      p[1].y -= len * lift * 0.5;
-      p[3].y -= len * lift * 0.28;
-      p[7].y += len * thick * 0.12;
-      for (let i = 0; i < 5; i++) {
-        const u = p[i], l = p[9 - i];
-        const dx = u.x - l.x, dy = u.y - l.y;
-        const d = Math.hypot(dx, dy) || 1;
-        u.x += (dx / d) * len * thick * 0.18;
-        u.y += (dy / d) * len * thick * 0.18;
-        l.x -= (dx / d) * len * thick * 0.14;
-        l.y -= (dy / d) * len * thick * 0.14;
-      }
-      if (kind === "ombre") {
-        p[4].x = p[4].x * 0.4 + inner.x * 0.6;
-        p[5].x = p[5].x * 0.4 + inner.x * 0.6;
-      }
+      p[1].y -= len * lift * 0.35;
+      p[3].y -= len * lift * 0.12;
       return p;
     }
 
     function drawBrow(main, poly, w, h, style, seed) {
       poly = shapeBrow(poly, style.kind);
-      const upper = poly.slice(0, 5).reverse();
-      const lower = poly.slice(5);
+      const upper = densify(poly.slice(0, 5).reverse(), 24);
+      const lower = densify(poly.slice(5), 24);
       const inner = { x: (upper[0].x + lower[0].x) / 2, y: (upper[0].y + lower[0].y) / 2 };
       const outer = {
         x: (upper[upper.length - 1].x + lower[lower.length - 1].x) / 2,
         y: (upper[upper.length - 1].y + lower[lower.length - 1].y) / 2
       };
+      const sz = featSize(poly);
+      const edgeBlur = Math.max(0.7, Math.min(2.2, sz.h * 0.08));
       const o = ensureLayer(w, h);
       o.clearRect(0, 0, w, h);
       o.save();
-      o.filter = "blur(2px)";
+      o.filter = `blur(${edgeBlur}px)`;
       smoothPath(o, poly, true);
       o.clip();
       const g = o.createLinearGradient(inner.x, inner.y, outer.x, outer.y);
       if (style.kind === "ombre") {
-        g.addColorStop(0, "rgba(90,68,52,0.18)");
-        g.addColorStop(0.32, "rgba(70,48,34,0.5)");
-        g.addColorStop(1, "rgba(28,14,8,0.88)");
+        g.addColorStop(0, "rgba(128,96,74,0.08)");
+        g.addColorStop(0.28, "rgba(92,62,44,0.22)");
+        g.addColorStop(0.7, "rgba(58,38,26,0.4)");
+        g.addColorStop(1, "rgba(36,22,14,0.52)");
       } else if (style.kind === "natural") {
-        g.addColorStop(0, "rgba(106,74,56,0.38)");
-        g.addColorStop(1, "rgba(72,46,32,0.62)");
+        g.addColorStop(0, "rgba(130,98,76,0.1)");
+        g.addColorStop(0.45, "rgba(100,74,54,0.18)");
+        g.addColorStop(1, "rgba(78,56,40,0.26)");
       } else if (style.kind === "bold") {
-        g.addColorStop(0, "rgba(42,24,14,0.72)");
-        g.addColorStop(1, "rgba(18,10,6,0.92)");
+        g.addColorStop(0, "rgba(86,58,40,0.22)");
+        g.addColorStop(1, "rgba(40,24,14,0.42)");
       } else {
-        g.addColorStop(0, "rgba(70,46,32,0.42)");
-        g.addColorStop(1, "rgba(36,22,14,0.78)");
+        g.addColorStop(0, "rgba(110,80,58,0.12)");
+        g.addColorStop(1, "rgba(56,36,24,0.32)");
       }
       o.fillStyle = g;
       o.fillRect(0, 0, w, h);
       o.restore();
-      compositeLayer(main, w, h, "multiply", style.kind === "bold" ? 0.7 : 0.58);
-      compositeLayer(main, w, h, "soft-light", 0.32);
+      compositeLayer(main, w, h, "multiply", style.kind === "bold" ? 0.34 : style.kind === "ombre" ? 0.3 : 0.22);
+      compositeLayer(main, w, h, "soft-light", 0.16);
 
       if (style.kind === "hairstroke" || style.kind === "feather" || style.kind === "natural") {
         o.clearRect(0, 0, w, h);
-        const count = style.kind === "hairstroke" ? 48 : style.kind === "feather" ? 32 : 20;
+        const count = style.kind === "hairstroke" ? 86 : style.kind === "feather" ? 54 : 30;
         o.save();
         o.strokeStyle = style.color;
         o.lineCap = "round";
-        o.filter = "blur(0.55px)";
+        o.filter = `blur(${Math.max(0.35, sz.h * 0.012)}px)`;
+        smoothPath(o, poly, true);
+        o.clip();
         for (let i = 0; i < count; i++) {
-          const t = i / (count - 1);
+          const t = Math.pow(i / (count - 1), 0.92);
           const u = lerpPt(upper, t);
           const l = lerpPt(lower, t);
-          const cx = (u.x + l.x) / 2, cy = (u.y + l.y) / 2;
           const thick = Math.hypot(u.x - l.x, u.y - l.y);
-          const t2 = Math.min(1, t + 0.1);
-          const u2 = lerpPt(upper, t2), l2 = lerpPt(lower, t2);
-          let dx = (u2.x + l2.x) / 2 - cx;
-          let dy = (u2.y + l2.y) / 2 - cy;
-          if (t < 0.4) dy -= Math.abs(dx) * 0.45 * (1 - t / 0.4);
-          const len = Math.hypot(dx, dy) || 1;
-          dx /= len; dy /= len;
-          const jitter = (hash(seed + i) - 0.5) * (style.kind === "feather" ? 0.4 : 0.14);
-          const c = Math.cos(jitter), s = Math.sin(jitter);
-          const hx = dx * c - dy * s, hy = dx * s + dy * c;
-          const across = (hash(seed + i + 9) - 0.5) * thick * (style.kind === "feather" ? 0.8 : 0.55);
-          const nx = -dy, ny = dx;
-          const sx = cx + nx * across, sy = cy + ny * across;
-          const hair = thick * (style.kind === "feather" ? 1.2 : 0.85) * (0.65 + hash(seed + i + 3) * 0.4);
-          o.globalAlpha = 0.7 * (0.55 + hash(seed + i + 5) * 0.45);
-          o.lineWidth = Math.max(0.7, 0.9 + hash(seed + i + 11) * 0.7);
+          const upx = u.x - l.x, upy = u.y - l.y;
+          const upLen = Math.hypot(upx, upy) || 1;
+          const nx = upx / upLen, ny = upy / upLen;
+          const t2 = Math.min(1, t + 0.08);
+          const c2 = lerpPt(upper, t2);
+          const l2 = lerpPt(lower, t2);
+          let tx = (c2.x + l2.x) / 2 - (u.x + l.x) / 2;
+          let ty = (c2.y + l2.y) / 2 - (u.y + l.y) / 2;
+          const tLen = Math.hypot(tx, ty) || 1;
+          tx /= tLen; ty /= tLen;
+          const head = 1 - t;
+          const slant = style.kind === "feather" ? 0.22 : 0.38;
+          let hx = nx * (0.72 + head * 0.28) + tx * slant * (0.35 + t * 0.65);
+          let hy = ny * (0.72 + head * 0.28) + ty * slant * (0.35 + t * 0.65);
+          const hLen = Math.hypot(hx, hy) || 1;
+          hx /= hLen; hy /= hLen;
+          const jitter = (hash(seed + i) - 0.5) * (style.kind === "feather" ? 0.28 : 0.1);
+          const cs = Math.cos(jitter), sn = Math.sin(jitter);
+          const dx = hx * cs - hy * sn, dy = hx * sn + hy * cs;
+          const along = (hash(seed + i + 9) - 0.5) * thick * 0.18;
+          const px = -hy, py = hx;
+          const startT = 0.08 + hash(seed + i + 4) * 0.22;
+          const sx = l.x + nx * thick * startT + px * along;
+          const sy = l.y + ny * thick * startT + py * along;
+          const hair = thick * (style.kind === "feather" ? 0.95 : 0.78) * (0.55 + hash(seed + i + 3) * 0.4) * (t < 0.22 ? 0.7 : 1);
+          const fadeHead = t < 0.18 ? 0.45 + t / 0.18 * 0.55 : 1;
+          o.globalAlpha = (style.kind === "natural" ? 0.22 : 0.32) * fadeHead * (0.5 + hash(seed + i + 5) * 0.5);
+          o.lineWidth = Math.max(0.35, thick * (style.kind === "hairstroke" ? 0.085 : 0.07) * (0.7 + hash(seed + i + 11) * 0.5));
           o.beginPath();
-          o.moveTo(sx - hx * hair * 0.25, sy - hy * hair * 0.25);
-          o.quadraticCurveTo(sx, sy, sx + hx * hair * 0.75, sy + hy * hair * 0.75);
+          o.moveTo(sx, sy);
+          o.quadraticCurveTo(sx + dx * hair * 0.45, sy + dy * hair * 0.45, sx + dx * hair, sy + dy * hair);
           o.stroke();
         }
         o.restore();
-        compositeLayer(main, w, h, "multiply", 0.68);
+        compositeLayer(main, w, h, "multiply", style.kind === "hairstroke" ? 0.42 : 0.3);
       }
     }
 
     function drawLips(main, lm, w, h, style) {
       const outer = pts(lm, LIP_OUTER, w, h);
       const inner = pts(lm, LIP_INNER, w, h);
+      const upper = pts(lm, LIP_UPPER, w, h);
+      const sz = featSize(outer);
+      const edgeBlur = Math.max(0.5, Math.min(1.6, sz.h * 0.045));
       const o = ensureLayer(w, h);
       o.clearRect(0, 0, w, h);
 
@@ -785,66 +812,111 @@
       addSmooth(o, outer, true);
       addSmooth(o, inner, true);
       o.clip("evenodd");
-      o.filter = "blur(1.8px)";
-      o.fillStyle = style.color;
-      o.globalAlpha = 0.92;
+      o.filter = `blur(${edgeBlur}px)`;
+      const mid = lerpPt(upper, 0.5);
+      const g = o.createRadialGradient(mid.x, mid.y, sz.h * 0.12, mid.x, mid.y, Math.max(sz.w, sz.h) * 0.62);
+      g.addColorStop(0, style.color);
+      g.addColorStop(1, style.color);
+      o.fillStyle = g;
+      o.globalAlpha = 0.9;
       o.beginPath();
       addSmooth(o, outer, true);
       o.fill();
       o.restore();
 
-      compositeLayer(main, w, h, "soft-light", style.finish === "matte" ? 0.48 : 0.58);
+      compositeLayer(main, w, h, "soft-light", style.finish === "matte" ? 0.42 : 0.54);
       compositeLayer(main, w, h, "multiply", style.alpha);
 
+      o.clearRect(0, 0, w, h);
+      o.save();
+      o.beginPath();
+      addSmooth(o, outer, true);
+      addSmooth(o, inner, true);
+      o.clip("evenodd");
+      o.strokeStyle = style.color;
+      o.globalAlpha = 0.55;
+      o.lineWidth = Math.max(0.6, sz.h * 0.035);
+      o.filter = `blur(${edgeBlur * 0.7}px)`;
+      o.lineJoin = "round";
+      smoothPath(o, outer, true);
+      o.stroke();
+      o.restore();
+      compositeLayer(main, w, h, "multiply", 0.22);
+
       if (style.finish === "satin") {
-        const upper = pts(lm, [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291], w, h);
+        const bow = densify(upper.slice(2, 9), 12);
         o.clearRect(0, 0, w, h);
         o.save();
         o.beginPath();
         addSmooth(o, outer, true);
         addSmooth(o, inner, true);
         o.clip("evenodd");
-        o.filter = "blur(2.4px)";
+        o.filter = `blur(${Math.max(1.2, sz.h * 0.08)}px)`;
         o.fillStyle = "#fff6f1";
-        o.globalAlpha = 0.45;
-        smoothPath(o, upper, true);
+        o.globalAlpha = 0.38;
+        o.beginPath();
+        addSmooth(o, bow, false);
+        const cupid = mapLm(lm, 0, w, h);
+        o.lineTo(cupid.x, cupid.y + sz.h * 0.18);
+        o.closePath();
         o.fill();
         o.restore();
-        compositeLayer(main, w, h, "soft-light", 0.28);
+        compositeLayer(main, w, h, "soft-light", 0.26);
       }
     }
 
-    function offsetAway(points, origin, amount) {
-      return points.map((p) => {
+    function taperedRibbon(line, origin, innerW, outerW) {
+      const top = [], bot = [];
+      const n = Math.max(1, line.length - 1);
+      for (let i = 0; i < line.length; i++) {
+        const p = line[i];
+        const t = i / n;
+        const amt = innerW + (outerW - innerW) * (t * t);
         const dx = p.x - origin.x, dy = p.y - origin.y;
         const len = Math.hypot(dx, dy) || 1;
-        return { x: p.x + (dx / len) * amount, y: p.y + (dy / len) * amount };
-      });
+        top.push({ x: p.x + (dx / len) * amt, y: p.y + (dy / len) * amt });
+        bot.push({ x: p.x + (dx / len) * amt * 0.12, y: p.y + (dy / len) * amt * 0.12 });
+      }
+      return bot.concat(top.slice().reverse());
     }
 
     function drawLiner(main, lm, w, h, style) {
-      const scale = w / 420;
-      const spec = {
-        lash: { thick: 2.4 * scale, blur: 0.75, alpha: 0.72, wing: 0 },
-        classic: { thick: 3.4 * scale, blur: 0.65, alpha: 0.8, wing: w * 0.01 },
-        cat: { thick: 3.6 * scale, blur: 0.55, alpha: 0.86, wing: w * 0.07 },
-        smoky: { thick: 5.6 * scale, blur: 2.2, alpha: 0.62, wing: w * 0.028 }
-      }[style.kind];
+      const eyes = [
+        { lash: LEFT_LASH, iris: LEFT_IRIS, lower: LEFT_LOWER_LID },
+        { lash: RIGHT_LASH, iris: RIGHT_IRIS, lower: RIGHT_LOWER_LID }
+      ];
 
-      [
-        { lash: LEFT_LASH, iris: LEFT_IRIS },
-        { lash: RIGHT_LASH, iris: RIGHT_IRIS }
-      ].forEach(({ lash, iris }) => {
-        let line = pts(lm, lash, w, h);
+      eyes.forEach(({ lash, iris, lower }) => {
+        const line = densify(pts(lm, lash, w, h), 28);
+        const lid = pts(lm, lower, w, h);
+        const origin = mapLm(lm, iris, w, h);
+        const sz = featSize(line);
+        const scale = sz.w / 180;
+        const spec = {
+          lash: { inner: 0.55 * scale, outer: 1.35 * scale, blur: 0.45, alpha: 0.62, wing: 0 },
+          classic: { inner: 0.7 * scale, outer: 2.1 * scale, blur: 0.5, alpha: 0.78, wing: sz.w * 0.06 },
+          cat: { inner: 0.75 * scale, outer: 2.35 * scale, blur: 0.42, alpha: 0.84, wing: sz.w * 0.22 },
+          smoky: { inner: 1.1 * scale, outer: 3.4 * scale, blur: 1.6, alpha: 0.52, wing: sz.w * 0.1 }
+        }[style.kind];
+
+        let ribbonLine = line.slice();
         if (spec.wing > 0) {
-          const a = line[0], b = line[Math.min(2, line.length - 1)];
+          const a = lid[0];
+          const b = lid[Math.min(1, lid.length - 1)];
           const dx = a.x - b.x, dy = a.y - b.y;
           const d = Math.hypot(dx, dy) || 1;
-          line = [{ x: a.x + (dx / d) * spec.wing, y: a.y + (dy / d) * spec.wing - Math.abs(spec.wing) * 0.28 }].concat(line);
+          const tip = {
+            x: a.x + (dx / d) * spec.wing,
+            y: a.y + (dy / d) * spec.wing - spec.wing * 0.32
+          };
+          const mid = {
+            x: a.x + (dx / d) * spec.wing * 0.45,
+            y: a.y + (dy / d) * spec.wing * 0.45 - spec.wing * 0.12
+          };
+          ribbonLine = densify([tip, mid, a].concat(line.slice(1)), 36);
         }
-        const origin = mapLm(lm, iris, w, h);
-        const outer = offsetAway(line, origin, spec.thick);
-        const poly = line.concat(outer.slice().reverse());
+
+        const poly = taperedRibbon(ribbonLine, origin, spec.inner, spec.outer);
         const o = ensureLayer(w, h);
         o.clearRect(0, 0, w, h);
         o.save();
@@ -854,7 +926,7 @@
         o.fill();
         o.restore();
         compositeLayer(main, w, h, "multiply", spec.alpha);
-        compositeLayer(main, w, h, "soft-light", 0.18);
+        compositeLayer(main, w, h, "soft-light", 0.14);
       });
     }
 
