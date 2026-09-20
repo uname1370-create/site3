@@ -247,6 +247,11 @@
         </div>
       </div>
 
+      <label id="fullViewLabel" class="chip mt-4 flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-2xl px-4 text-[13px] font-semibold">
+        <input id="fullView" type="checkbox" class="h-4 w-4 accent-[#0F3D2E]" />
+        نمای کامل عکس
+      </label>
+
       <p class="mt-5 text-center text-[11px] font-medium text-brand-800/50">انتخاب مدل</p>
       <div id="styleRow" class="mt-2 flex flex-wrap gap-2"></div>
 
@@ -302,13 +307,13 @@
     const SERVICE_LABELS = { brow: "ابرو", lip: "لب", liner: "خط چشم" };
     const STYLES = {
       brow: [
-        { id: "natural", name: "طبیعی", hint: "سر روشن، دم کمی تیره", kind: "natural", color: "#6A4A38" },
-        { id: "micro", name: "میکروبلیدینگ", hint: "هاشور تار به تار", kind: "hairstroke", color: "#3E2A1C" },
-        { id: "russian", name: "هاشور روسی", hint: "قوس بالاتر، تار منظم", kind: "russian", color: "#2C1C12" },
-        { id: "powder", name: "سایه پودری", hint: "از روشن به تیره", kind: "ombre", color: "#4A3122" },
-        { id: "combo", name: "ترکیبی", hint: "هاشور + سایه تیره", kind: "combo", color: "#3A2618" },
-        { id: "laminate", name: "لمینیت", hint: "تارهای رو به بالا", kind: "laminate", color: "#4A3224" },
-        { id: "bold", name: "کلاسیک بولد", hint: "پر و دم تیره", kind: "bold", color: "#2A1810" }
+        { id: "natural", name: "طبیعی", hint: "هاشور خیلی ظریف", kind: "natural", color: "#6A4A38" },
+        { id: "micro", name: "میکروبلیدینگ", hint: "تار مو روی ابرو", kind: "hairstroke", color: "#3E2A1C" },
+        { id: "phibrows", name: "فیبروز", hint: "الگوی فی، قوس طلایی", kind: "phibrows", color: "#2C1C12" },
+        { id: "powder", name: "شیدینگ پودری", hint: "سایه سر روشن دم تیره", kind: "ombre", color: "#4A3122" },
+        { id: "combo", name: "ترکیبی", hint: "هاشور + شیدینگ", kind: "combo", color: "#3A2618" },
+        { id: "laminate", name: "لمینیت", hint: "تار شانه خورده به بالا", kind: "laminate", color: "#4A3224" },
+        { id: "bold", name: "بولد بروز", hint: "پر، مشخص، دم تیره", kind: "bold", color: "#2A1810" }
       ],
       lip: [
         { id: "nude", name: "نود رزی", hint: "ساتین ملایم", color: "#C9897B", finish: "satin", alpha: 0.28 },
@@ -351,6 +356,7 @@
       displayH: 0,
       split: 0.5,
       shade: 0.55,
+      fullView: false,
       crop: { x: 0, y: 0, w: 1, h: 1 }
     };
 
@@ -372,6 +378,8 @@
       processing: document.getElementById("processing"),
       styleRow: document.getElementById("styleRow"),
       shadeSlider: document.getElementById("shadeSlider"),
+      fullView: document.getElementById("fullView"),
+      fullViewLabel: document.getElementById("fullViewLabel"),
       wantThis: document.getElementById("wantThis"),
       serviceStyle: document.getElementById("serviceStyle"),
       bookForm: document.getElementById("bookForm"),
@@ -585,13 +593,21 @@
 
     function updateCrop() {
       const lm = state.landmarks;
-      if (!lm) {
+      if (!lm || state.fullView) {
         state.crop = { x: 0, y: 0, w: 1, h: 1 };
         return;
       }
       if (state.service === "brow") state.crop = padBox(boxOf(lm, BROW_ZONE), 0.18, 0.55);
       else if (state.service === "lip") state.crop = padBox(boxOf(lm, LIP_OUTER), 0.28, 0.48);
       else state.crop = padBox(boxOf(lm, EYE_ZONE), 0.2, 0.42);
+    }
+
+    function applyView() {
+      updateCrop();
+      applySplit(0.5);
+      layoutCanvases();
+      if (state.landmarks) drawAll();
+      else if (state.image) drawOriginalOnly();
     }
 
     function layoutCanvases() {
@@ -745,8 +761,8 @@
       const inner = { x: (p[4].x + p[5].x) / 2, y: (p[4].y + p[5].y) / 2 };
       const outer = { x: (p[0].x + p[9].x) / 2, y: (p[0].y + p[9].y) / 2 };
       const len = Math.hypot(outer.x - inner.x, outer.y - inner.y) || 1;
-      const tail = ({ bold: 0.07, ombre: 0.08, combo: 0.06, hairstroke: 0.045, russian: 0.055, laminate: 0.02 }[kind] || 0.015);
-      const lift = ({ bold: 0.055, russian: 0.075, combo: 0.045, hairstroke: 0.035, ombre: 0.03, laminate: 0.028 }[kind] || 0.01);
+      const tail = ({ bold: 0.07, ombre: 0.08, combo: 0.06, hairstroke: 0.045, phibrows: 0.05, russian: 0.055, laminate: 0.02 }[kind] || 0.015);
+      const lift = ({ bold: 0.05, phibrows: 0.08, russian: 0.075, combo: 0.04, hairstroke: 0.03, ombre: 0.028, laminate: 0.02 }[kind] || 0.01);
       function push(pt, from, amt) {
         const dx = pt.x - from.x, dy = pt.y - from.y;
         const d = Math.hypot(dx, dy) || 1;
@@ -791,10 +807,10 @@
       compositeLayer(main, w, h, "multiply", Math.min(0.92, fillMul));
       compositeLayer(main, w, h, "soft-light", 0.12);
 
-      const hairKinds = { hairstroke: 1, feather: 1, natural: 1, russian: 1, combo: 1, laminate: 1 };
+      const hairKinds = { hairstroke: 1, feather: 1, natural: 1, russian: 1, phibrows: 1, combo: 1, laminate: 1 };
       if (hairKinds[style.kind]) {
         o.clearRect(0, 0, w, h);
-        const count = style.kind === "hairstroke" ? 86 : style.kind === "russian" ? 78 : style.kind === "combo" ? 48 : style.kind === "laminate" ? 40 : style.kind === "feather" ? 54 : 30;
+        const count = style.kind === "hairstroke" ? 86 : style.kind === "phibrows" || style.kind === "russian" ? 78 : style.kind === "combo" ? 48 : style.kind === "laminate" ? 40 : style.kind === "feather" ? 54 : 30;
         o.save();
         o.strokeStyle = style.color;
         o.lineCap = "round";
@@ -817,12 +833,12 @@
           const tLen = Math.hypot(tx, ty) || 1;
           tx /= tLen; ty /= tLen;
           const head = 1 - t;
-          const slant = style.kind === "laminate" ? 0.08 : style.kind === "feather" ? 0.22 : style.kind === "russian" ? 0.48 : 0.38;
+          const slant = style.kind === "laminate" ? 0.08 : style.kind === "feather" ? 0.22 : style.kind === "phibrows" || style.kind === "russian" ? 0.48 : 0.38;
           let hx = nx * (0.72 + head * 0.28) + tx * slant * (0.35 + t * 0.65);
           let hy = ny * (0.72 + head * 0.28) + ty * slant * (0.35 + t * 0.65);
           const hLen = Math.hypot(hx, hy) || 1;
           hx /= hLen; hy /= hLen;
-          const jitter = (hash(seed + i) - 0.5) * (style.kind === "feather" ? 0.28 : style.kind === "russian" || style.kind === "laminate" ? 0.04 : 0.1);
+          const jitter = (hash(seed + i) - 0.5) * (style.kind === "feather" ? 0.28 : style.kind === "phibrows" || style.kind === "russian" || style.kind === "laminate" ? 0.04 : 0.1);
           const cs = Math.cos(jitter), sn = Math.sin(jitter);
           const dx = hx * cs - hy * sn, dy = hx * sn + hy * cs;
           const along = (hash(seed + i + 9) - 0.5) * thick * 0.18;
@@ -833,14 +849,14 @@
           const hair = thick * (style.kind === "laminate" ? 1.15 : style.kind === "feather" ? 0.95 : 0.78) * (0.55 + hash(seed + i + 3) * 0.4) * (t < 0.22 ? 0.7 : 1);
           const fadeHead = t < 0.18 ? 0.45 + t / 0.18 * 0.55 : 1;
           o.globalAlpha = (style.kind === "natural" ? 0.22 : style.kind === "combo" ? 0.26 : 0.32) * fadeHead * (0.35 + sh * 0.9) * (0.5 + hash(seed + i + 5) * 0.5);
-          o.lineWidth = Math.max(0.35, thick * (style.kind === "hairstroke" || style.kind === "russian" ? 0.085 : 0.07) * (0.7 + hash(seed + i + 11) * 0.5));
+          o.lineWidth = Math.max(0.35, thick * (style.kind === "hairstroke" || style.kind === "phibrows" || style.kind === "russian" ? 0.085 : 0.07) * (0.7 + hash(seed + i + 11) * 0.5));
           o.beginPath();
           o.moveTo(sx, sy);
           o.quadraticCurveTo(sx + dx * hair * 0.45, sy + dy * hair * 0.45, sx + dx * hair, sy + dy * hair);
           o.stroke();
         }
         o.restore();
-        compositeLayer(main, w, h, "multiply", (style.kind === "hairstroke" || style.kind === "russian" ? 0.42 : 0.3) * (0.4 + sh * 1.1));
+        compositeLayer(main, w, h, "multiply", (style.kind === "hairstroke" || style.kind === "phibrows" || style.kind === "russian" ? 0.42 : 0.3) * (0.4 + sh * 1.1));
       }
     }
 
@@ -1062,11 +1078,23 @@
       });
     });
 
-    els.shadeSlider.addEventListener("input", () => {
-      state.shade = Number(els.shadeSlider.value) / 100;
-      if (state.landmarks) drawAll();
-    });
-    els.shadeSlider.addEventListener("pointerdown", (e) => e.stopPropagation());
+    if (els.shadeSlider) {
+      const applyShade = () => {
+        state.shade = Number(els.shadeSlider.value) / 100;
+        if (state.landmarks) drawAll();
+      };
+      els.shadeSlider.addEventListener("input", applyShade);
+      els.shadeSlider.addEventListener("change", applyShade);
+      els.shadeSlider.addEventListener("pointerdown", (e) => e.stopPropagation());
+    }
+
+    if (els.fullView) {
+      els.fullView.addEventListener("change", () => {
+        state.fullView = !!els.fullView.checked;
+        if (els.fullViewLabel) els.fullViewLabel.classList.toggle("active", state.fullView);
+        applyView();
+      });
+    }
 
     els.wantThis.addEventListener("click", () => {
       syncServiceField();
