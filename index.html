@@ -176,14 +176,11 @@
 
       <p class="mt-6 text-center text-xs font-medium text-brand-800/55">یا با عکس نمونه تست کن</p>
       <div class="mt-3 flex justify-center gap-3">
-        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop&crop=faces&q=80">
-          <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&crop=faces&q=60" alt="نمونه ۱" class="h-full w-full object-cover" />
+        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://raw.githubusercontent.com/uname1370-create/site3/arena/01a0bc02-site3/m2.png">
+          <img src="https://raw.githubusercontent.com/uname1370-create/site3/arena/01a0bc02-site3/m2.png" alt="نمونه ۱" class="h-full w-full object-cover" crossorigin="anonymous" />
         </button>
-        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&crop=faces&q=80">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&crop=faces&q=60" alt="نمونه ۲" class="h-full w-full object-cover" />
-        </button>
-        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&crop=faces&q=80">
-          <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&crop=faces&q=60" alt="نمونه ۳" class="h-full w-full object-cover" />
+        <button type="button" class="preset-btn h-16 w-16 overflow-hidden rounded-2xl ring-1 ring-brand-800/10" data-src="https://raw.githubusercontent.com/uname1370-create/site3/arena/01a0bc02-site3/m3.png">
+          <img src="https://raw.githubusercontent.com/uname1370-create/site3/arena/01a0bc02-site3/m3.png" alt="نمونه ۲" class="h-full w-full object-cover" crossorigin="anonymous" />
         </button>
       </div>
     </section>
@@ -281,11 +278,11 @@
         { id: "bold", name: "کلاسیک بولد", hint: "قوس واضح، لبه تمیز", kind: "bold", color: "#2A1810" }
       ],
       lip: [
-        { id: "nude", name: "نود رزی", hint: "ساتین ملایم", color: "#C9897B", finish: "satin", alpha: 0.38 },
-        { id: "coral", name: "کالباسی مات", hint: "مرجانی مات", color: "#D07060", finish: "matte", alpha: 0.42 },
-        { id: "brick", name: "آجری", hint: "ولوت گرم", color: "#A24B3A", finish: "matte", alpha: 0.46 },
-        { id: "pink", name: "صورتی مخملی", hint: "ساتین مخمل", color: "#C45C78", finish: "satin", alpha: 0.44 },
-        { id: "berry", name: "بری تیره", hint: "عمیق و غنی", color: "#7A2E44", finish: "satin", alpha: 0.48 }
+        { id: "nude", name: "نود رزی", hint: "ساتین ملایم", color: "#C9897B", finish: "satin", alpha: 0.22 },
+        { id: "coral", name: "کالباسی مات", hint: "مرجانی مات", color: "#D07060", finish: "matte", alpha: 0.24 },
+        { id: "brick", name: "آجری", hint: "ولوت گرم", color: "#A24B3A", finish: "matte", alpha: 0.28 },
+        { id: "pink", name: "صورتی مخملی", hint: "ساتین مخمل", color: "#C45C78", finish: "satin", alpha: 0.26 },
+        { id: "berry", name: "بری تیره", hint: "عمیق و غنی", color: "#7A2E44", finish: "satin", alpha: 0.30 }
       ],
       liner: [
         { id: "lash", name: "بن‌مژه", hint: "خیلی ظریف بین مژه‌ها", kind: "lash", color: "#2A2118" },
@@ -687,70 +684,75 @@
       };
 
       if (style.kind === "natural") {
-        fillBrowShape(o, inflate(shaped, 1.02), style.color, 3.4);
-        compositeLayer(main, w, h, "multiply", 0.32);
+        fillBrowShape(o, inflate(shaped, 1.02), style.color, 4.8);
+        compositeLayer(main, w, h, "multiply", 0.24);
+        compositeLayer(main, w, h, "soft-light", 0.28);
         o.clearRect(0, 0, w, h);
         drawHairStrokes(o, upper, lower, {
-          count: 26, color: style.color, alpha: 0.42, strokeW: 0.7, lenMul: 0.55,
-          jitter: 0.22, spread: 0.45, upLift: 0.35, upLiftUntil: 0.4, blur: 0.4,
+          count: 26, color: style.color, alpha: 0.36, strokeW: 0.7, lenMul: 0.55,
+          jitter: 0.22, spread: 0.45, upLift: 0.35, upLiftUntil: 0.4, blur: 0.7,
           density: () => 0.7
         }, seed * 17);
-        compositeLayer(main, w, h, "multiply", 0.55);
+        compositeLayer(main, w, h, "multiply", 0.42);
       } else if (style.kind === "hairstroke") {
-        fillBrowShape(o, shaped, style.color, 1.6);
-        compositeLayer(main, w, h, "multiply", 0.18);
+        fillBrowShape(o, shaped, style.color, 2.6);
+        compositeLayer(main, w, h, "multiply", 0.14);
+        compositeLayer(main, w, h, "soft-light", 0.2);
         o.clearRect(0, 0, w, h);
         drawHairStrokes(o, upper, lower, {
-          count: 54, color: style.color, alpha: 0.7, strokeW: 0.55, lenMul: 0.92,
-          jitter: 0.12, spread: 0.62, upLift: 0.55, upLiftUntil: 0.42, blur: 0.15,
+          count: 54, color: style.color, alpha: 0.58, strokeW: 0.55, lenMul: 0.92,
+          jitter: 0.12, spread: 0.62, upLift: 0.55, upLiftUntil: 0.42, blur: 0.4,
           density: (t) => 0.75 + t * 0.25
         }, seed * 31);
-        compositeLayer(main, w, h, "multiply", 0.72);
+        compositeLayer(main, w, h, "multiply", 0.55);
       } else if (style.kind === "ombre") {
         o.save();
-        o.filter = "blur(2.6px)";
+        o.filter = "blur(3.8px)";
         smoothPath(o, inflate(shaped, 1.04), true);
         o.clip();
         const g = o.createLinearGradient(inner.x, inner.y, outer.x, outer.y);
-        g.addColorStop(0, "rgba(90,70,55,0.12)");
-        g.addColorStop(0.28, "rgba(70,48,34,0.28)");
-        g.addColorStop(0.62, "rgba(55,36,24,0.52)");
-        g.addColorStop(1, "rgba(40,24,16,0.7)");
+        g.addColorStop(0, "rgba(90,70,55,0.10)");
+        g.addColorStop(0.28, "rgba(70,48,34,0.22)");
+        g.addColorStop(0.62, "rgba(55,36,24,0.42)");
+        g.addColorStop(1, "rgba(40,24,16,0.58)");
         o.fillStyle = g;
         o.fillRect(0, 0, w, h);
         o.restore();
-        compositeLayer(main, w, h, "multiply", 0.58);
+        compositeLayer(main, w, h, "multiply", 0.44);
+        compositeLayer(main, w, h, "soft-light", 0.22);
         o.clearRect(0, 0, w, h);
         drawHairStrokes(o, upper, lower, {
-          count: 18, color: style.color, alpha: 0.28, strokeW: 0.5, lenMul: 0.5,
-          jitter: 0.08, spread: 0.3, upLift: 0.2, upLiftUntil: 0.3, blur: 0.6,
+          count: 18, color: style.color, alpha: 0.24, strokeW: 0.5, lenMul: 0.5,
+          jitter: 0.08, spread: 0.3, upLift: 0.2, upLiftUntil: 0.3, blur: 0.9,
           density: (t) => 0.2 + t * 0.8
         }, seed * 41);
-        compositeLayer(main, w, h, "multiply", 0.45);
+        compositeLayer(main, w, h, "multiply", 0.34);
       } else if (style.kind === "feather") {
-        fillBrowShape(o, inflate(shaped, 0.98), style.color, 2.8);
-        compositeLayer(main, w, h, "multiply", 0.16);
+        fillBrowShape(o, inflate(shaped, 0.98), style.color, 4.2);
+        compositeLayer(main, w, h, "multiply", 0.12);
+        compositeLayer(main, w, h, "soft-light", 0.22);
         o.clearRect(0, 0, w, h);
         drawHairStrokes(o, upper, lower, {
-          count: 36, color: style.color, alpha: 0.5, strokeW: 0.62, lenMul: 1.25,
-          jitter: 0.38, spread: 0.85, upLift: 0.85, upLiftUntil: 0.55, blur: 0.35,
+          count: 36, color: style.color, alpha: 0.42, strokeW: 0.62, lenMul: 1.25,
+          jitter: 0.38, spread: 0.85, upLift: 0.85, upLiftUntil: 0.55, blur: 0.65,
           back: 0.15, density: (t) => 0.9 - t * 0.25
         }, seed * 53);
-        compositeLayer(main, w, h, "multiply", 0.62);
+        compositeLayer(main, w, h, "multiply", 0.48);
       } else {
         const boldPoly = inflate(shaped, 1.12);
-        fillBrowShape(o, boldPoly, style.color, 1.1);
-        compositeLayer(main, w, h, "multiply", 0.48);
+        fillBrowShape(o, boldPoly, style.color, 2.2);
+        compositeLayer(main, w, h, "multiply", 0.36);
+        compositeLayer(main, w, h, "soft-light", 0.2);
         o.clearRect(0, 0, w, h);
         o.save();
-        o.filter = "blur(0.6px)";
+        o.filter = "blur(1.2px)";
         o.strokeStyle = style.color;
         o.lineWidth = Math.max(1.1, w * 0.0045);
-        o.globalAlpha = 0.55;
+        o.globalAlpha = 0.4;
         smoothPath(o, boldPoly, true);
         o.stroke();
         o.restore();
-        compositeLayer(main, w, h, "multiply", 0.7);
+        compositeLayer(main, w, h, "multiply", 0.5);
       }
     }
 
@@ -762,8 +764,9 @@
       o.clearRect(0, 0, w, h);
 
       o.save();
-      o.filter = "blur(1.8px)";
+      o.filter = "blur(2.8px)";
       o.fillStyle = style.color;
+      o.globalAlpha = 0.92;
       smoothPath(o, outer, true);
       o.fill();
       o.restore();
@@ -778,14 +781,16 @@
       o.fill();
       o.restore();
 
+      compositeLayer(main, w, h, "soft-light", style.finish === "matte" ? 0.46 : 0.58);
       compositeLayer(main, w, h, "multiply", style.alpha);
 
       if (style.finish === "satin") {
         o.clearRect(0, 0, w, h);
         const upper = pts(lm, [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291], w, h);
         o.save();
-        o.filter = "blur(2.2px)";
+        o.filter = "blur(3.2px)";
         o.fillStyle = "#fff8f4";
+        o.globalAlpha = 0.55;
         smoothPath(o, upper, true);
         o.fill();
         o.globalCompositeOperation = "destination-out";
@@ -793,24 +798,8 @@
         smoothPath(o, inflate(innerFull, 1.02), true);
         o.fill();
         o.restore();
-        compositeLayer(main, w, h, "soft-light", 0.34);
+        compositeLayer(main, w, h, "soft-light", 0.22);
       }
-
-      o.clearRect(0, 0, w, h);
-      o.save();
-      o.filter = "blur(0.7px)";
-      o.strokeStyle = style.color;
-      o.lineWidth = Math.max(0.8, w * 0.0024);
-      o.globalAlpha = 0.45;
-      smoothPath(o, outer, true);
-      o.stroke();
-      o.restore();
-      o.save();
-      o.globalCompositeOperation = "destination-out";
-      smoothPath(o, inflate(innerFull, 1.04), true);
-      o.fill();
-      o.restore();
-      compositeLayer(main, w, h, "multiply", 0.4);
     }
 
     function offsetAway(points, origin, amount) {
@@ -995,6 +984,26 @@
         `سلام عسل جان 🌿\n` +
         `می‌خوام نوبت رزرو کنم.\n\n` +
         `نام: ${name}\n` +
+        `شماره: ${phone}\n` +
+        `خدمات: ${serviceStyle}\n` +
+        `تاریخ دلخواه: ${prettyDate}`;
+      window.location.href = `https://wa.me/989150000000?text=${encodeURIComponent(message)}`;
+    });
+
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!state.image) return;
+        layoutCanvases();
+        if (state.landmarks) drawAll();
+        else drawOriginalOnly();
+      }, 120);
+    });
+  </script>
+</body>
+</html>
+  `نام: ${name}\n` +
         `شماره: ${phone}\n` +
         `خدمات: ${serviceStyle}\n` +
         `تاریخ دلخواه: ${prettyDate}`;
