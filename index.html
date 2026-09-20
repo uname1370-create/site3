@@ -143,6 +143,32 @@
     .rise { animation: rise .8s ease both; }
     input[type="date"] { direction: rtl; }
     input[type="date"]::-webkit-calendar-picker-indicator { opacity: .55; cursor: pointer; }
+    .glass-wa {
+      background: linear-gradient(135deg, rgba(37, 211, 102, 0.92), rgba(18, 140, 70, 0.95));
+      color: #fff;
+      box-shadow: 0 10px 28px rgba(37, 211, 102, 0.28);
+      backdrop-filter: blur(10px);
+    }
+    .glass-ig {
+      background: linear-gradient(135deg, #F9E4D0 0%, #E8B4B8 42%, #C9A07A 100%);
+      color: #0F3D2E;
+      box-shadow: 0 10px 28px rgba(183, 110, 121, 0.28);
+      backdrop-filter: blur(10px);
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: max(1.5rem, env(safe-area-inset-bottom));
+      z-index: 80;
+      transform: translateX(-50%) translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease, transform .25s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body class="font-vazir antialiased">
@@ -273,7 +299,7 @@
       <p class="text-center text-[11px] font-medium tracking-[0.22em] text-gold-deep">۰۳  ·  رزرو نوبت</p>
       <h2 class="mt-2 text-center text-xl font-extrabold text-brand-800">فرم رزرو</h2>
       <p class="mx-auto mt-2 max-w-xs text-center text-sm font-light leading-7 text-brand-800/70">
-        مشخصاتت رو وارد کن تا مستقیم برات به واتساپ ارسال بشه.
+        مشخصاتت رو وارد کن؛ بعد از واتساپ یا دایرکت اینستاگرام بفرست.
       </p>
 
       <form id="bookForm" class="mt-6 space-y-3">
@@ -294,13 +320,42 @@
           <input id="date" name="date" type="date" required class="field w-full rounded-2xl px-4 text-sm" />
         </div>
         <button type="submit" class="gold-btn mt-2 flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold">
-          تایید و ارسال به واتساپ
+          تایید و ادامه رزرو
         </button>
       </form>
 
-      <p class="mt-8 text-center text-[11px] font-light text-brand-800/45">عسل رجبی · میکروبلیدینگ و شیدینگ</p>
+      <div id="bookingSuccess" class="mt-6 hidden rounded-3xl border border-gold/25 bg-white/55 p-5 shadow-[0_12px_40px_rgba(15,61,46,0.08)] backdrop-blur-md">
+        <p class="text-center text-[11px] font-medium tracking-[0.18em] text-gold-deep">رزرو آماده ارسال</p>
+        <h3 class="mt-2 text-center text-lg font-extrabold text-brand-800">نوبتت ثبت شد</h3>
+        <p class="mx-auto mt-2 max-w-xs text-center text-sm font-light leading-7 text-brand-800/75">
+          نوبتت ثبت شد! تا زمان تایید، پیام را از واتساپ یا دایرکت اینستاگرام بفرست 👇🏼
+        </p>
+        <div class="mt-5 space-y-2.5">
+          <button id="waSend" type="button" class="glass-wa flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold">
+            ارسال با واتساپ
+          </button>
+          <button id="igSend" type="button" class="glass-ig flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[14px] font-bold">
+            📸 دایرکت اینستاگرام @asalrajabi_pmu
+          </button>
+        </div>
+        <a
+          href="https://instagram.com/asalrajabi_pmu"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-4 block text-center text-xs font-medium text-brand-800/60"
+        >
+          مشاهده استوری‌های امروز پیج عسل رجبی
+        </a>
+      </div>
+
+      <p class="mt-8 text-center text-[11px] font-light text-brand-800/45">
+        عسل رجبی · میکروبلیدینگ و شیدینگ ·
+        <a href="https://instagram.com/asalrajabi_pmu" target="_blank" rel="noopener noreferrer" class="text-gold-deep">@asalrajabi_pmu</a>
+      </p>
     </section>
   </div>
+
+  <div id="toast" class="toast rounded-full bg-brand-800 px-4 py-2.5 text-center text-xs font-medium text-cream shadow-lg">متن رزرو کپی شد! در دایرکت Paste کنید ✨</div>
 
   <script type="module">
 
@@ -383,7 +438,11 @@
       wantThis: document.getElementById("wantThis"),
       serviceStyle: document.getElementById("serviceStyle"),
       bookForm: document.getElementById("bookForm"),
-      date: document.getElementById("date")
+      date: document.getElementById("date"),
+      bookingSuccess: document.getElementById("bookingSuccess"),
+      waSend: document.getElementById("waSend"),
+      igSend: document.getElementById("igSend"),
+      toast: document.getElementById("toast")
     };
 
     els.date.min = new Date().toISOString().split("T")[0];
@@ -1101,6 +1160,40 @@
       document.getElementById("booking").scrollIntoView({ behavior: "smooth" });
     });
 
+    let bookingMessage = "";
+    let toastTimer;
+
+    function showToast(text) {
+      if (!els.toast) return;
+      els.toast.textContent = text;
+      els.toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2600);
+    }
+
+    async function copyBookingText(text) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+      } catch (_) {}
+      try {
+        const area = document.createElement("textarea");
+        area.value = text;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.top = "-999px";
+        document.body.appendChild(area);
+        area.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(area);
+        return ok;
+      } catch (_) {
+        return false;
+      }
+    }
+
     els.bookForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const name = document.getElementById("name").value.trim();
@@ -1108,14 +1201,28 @@
       const serviceStyle = els.serviceStyle.value.trim();
       const date = document.getElementById("date").value;
       const prettyDate = date ? new Date(date + "T00:00:00").toLocaleDateString("fa-IR") : date;
-      const message =
+      bookingMessage =
         `سلام عسل جان 🌿\n` +
         `می‌خوام نوبت رزرو کنم.\n\n` +
         `نام: ${name}\n` +
         `شماره: ${phone}\n` +
         `خدمات: ${serviceStyle}\n` +
         `تاریخ دلخواه: ${prettyDate}`;
-      window.location.href = `https://wa.me/989150000000?text=${encodeURIComponent(message)}`;
+      els.bookForm.classList.add("hidden");
+      els.bookingSuccess.classList.remove("hidden");
+      els.bookingSuccess.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    els.waSend.addEventListener("click", () => {
+      if (!bookingMessage) return;
+      window.open(`https://wa.me/989150000000?text=${encodeURIComponent(bookingMessage)}`, "_blank", "noopener,noreferrer");
+    });
+
+    els.igSend.addEventListener("click", async () => {
+      if (!bookingMessage) return;
+      const copied = await copyBookingText(bookingMessage);
+      showToast(copied ? "متن رزرو کپی شد! در دایرکت Paste کنید ✨" : "متن کپی نشد؛ دستی کپی کن و در دایرکت بفرست");
+      window.open("https://ig.me/m/asalrajabi_pmu", "_blank", "noopener,noreferrer");
     });
 
     let resizeTimer;
