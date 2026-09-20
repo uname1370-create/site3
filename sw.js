@@ -6,7 +6,7 @@
 //  - cross-origin CDN assets (fonts, Tailwind, MediaPipe): stale-while-revalidate
 // ---------------------------------------------------------------------------
 
-const CACHE = "asar-v2";
+const CACHE = "asar-v3";
 const SHELL = [
   "./",
   "index.html",
@@ -19,6 +19,10 @@ const SHELL = [
   "m2.png",
   "m3.png",
   "js/tryon/app.js",
+  "js/tryon/workers/client.js",
+  "js/tryon/workers/tryon.worker.js",
+  "js/tryon/faceAnalyzer.js",
+  "js/tryon/pipeline.js",
 ];
 
 self.addEventListener("install", (event) => {

@@ -14,7 +14,7 @@
 
 ```bash
 # تست موتور (Node خالص، بدون مرورگر)
-node test/engine.test.mjs        # ۳۳/۳۳
+node test/engine.test.mjs        # ۴۰/۴۰
 
 # سایت
 python3 -m http.server 8080 --bind 0.0.0.0

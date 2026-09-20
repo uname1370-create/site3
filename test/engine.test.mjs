@@ -33,6 +33,7 @@ import { fitBrow, BROW_STYLES } from "../js/tryon/brow/model.js";
 import { colorizeLips } from "../js/tryon/lip/colorize.js";
 import { analyzeLiner, LINER_STYLES } from "../js/tryon/liner/analyze.js";
 import * as booking from "../js/tryon/booking.js";
+import { buildAnalysis, detectOnRaster, MSG } from "../js/tryon/faceAnalyzer.js";
 
 let pass = 0;
 let fail = 0;
@@ -558,6 +559,75 @@ test("liner: both sides mirror correctly", () => {
   const cx = rg.noseTip.x;
   assertClose(2 * cx - tL.x, tR.x, 1.5, "wing x mirror");
   assertClose(tL.y, tR.y, 0.8, "wing y mirror");
+});
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+console.log("quality gates (pure core, shared by worker & main thread)");
+
+const norm = (pts, size) => pts.map((p) => ({ x: p.x / size, y: p.y / size, z: 0 }));
+const LIGHT_OK = { mean: 150, std: 22, dark: false, overexposed: false, flat: false };
+const SYN3 = SYN.map((p) => ({ x: p.x * 3, y: p.y * 3 })); // face ≈ 660×780 px → passes resolution
+
+test("gate: low-resolution face is rejected", () => {
+  const a = buildAnalysis({ normalized: norm(SYN, 300), natW: 300, natH: 300, lighting: LIGHT_OK });
+  assert(a.errors.includes(MSG.LOW_RESOLUTION), a.errors.join(" | "));
+  assert(!a.quality.sufficientResolution);
+});
+
+test("gate: big frontal face with good light passes clean", () => {
+  const a = buildAnalysis({ normalized: norm(SYN3, 900), natW: 900, natH: 900, lighting: LIGHT_OK });
+  assert(a.errors.length === 0, a.errors.join(" | "));
+  assert(a.quality.sufficientResolution && a.quality.acceptablePose && a.quality.acceptableLighting);
+  assert(a.quality.features.brow && a.quality.features.lip && a.quality.features.liner);
+});
+
+test("gate: extreme roll is rejected", () => {
+  const th = (25 * Math.PI) / 180;
+  const rot = SYN3.map((p) => ({
+    x: 450 + (p.x - 450) * Math.cos(th) - (p.y - 450) * Math.sin(th),
+    y: 450 + (p.x - 450) * Math.sin(th) + (p.y - 450) * Math.cos(th),
+  }));
+  const a = buildAnalysis({ normalized: norm(rot, 900), natW: 900, natH: 900, lighting: LIGHT_OK });
+  assert(a.errors.includes(MSG.EXTREME_POSE), a.errors.join(" | "));
+});
+
+test("gate: dark / overexposed are errors, flat light is a warning", () => {
+  const n = norm(SYN3, 900);
+  const dark = buildAnalysis({ normalized: n, natW: 900, natH: 900, lighting: { mean: 30, std: 15, dark: true, overexposed: false, flat: false } });
+  assert(dark.errors.includes(MSG.LOW_LIGHT));
+  const over = buildAnalysis({ normalized: n, natW: 900, natH: 900, lighting: { mean: 250, std: 15, dark: false, overexposed: true, flat: false } });
+  assert(over.errors.includes(MSG.OVEREXPOSED));
+  const flat = buildAnalysis({ normalized: n, natW: 900, natH: 900, lighting: { mean: 150, std: 4, dark: false, overexposed: false, flat: true } });
+  assert(flat.errors.length === 0 && flat.warnings.length >= 1);
+});
+
+test("gate: no face detected is rejected with the Persian message", () => {
+  let threw = null;
+  try {
+    detectOnRaster({ detect: () => ({ faceLandmarks: [] }) }, { width: 300, height: 300 });
+  } catch (e) {
+    threw = e;
+  }
+  assert(threw && threw.code === "FACE_NOT_FOUND", String(threw));
+  assert(threw.message === MSG.FACE_NOT_FOUND);
+});
+
+test("gate: multiple prominent faces are rejected", () => {
+  const face = norm(SYN, 300);
+  let threw = null;
+  try {
+    detectOnRaster({ detect: () => ({ faceLandmarks: [face, face] }) }, { width: 300, height: 300 });
+  } catch (e) {
+    threw = e;
+  }
+  assert(threw && threw.code === "MULTIPLE_FACES", String(threw));
+});
+
+test("gate: single face passes detection", () => {
+  const face = norm(SYN, 300);
+  const { face: f, prominent } = detectOnRaster({ detect: () => ({ faceLandmarks: [face] }) }, { width: 300, height: 300 });
+  assert(f.length === 478 && prominent === 1);
 });
 
 // ---------------------------------------------------------------------------

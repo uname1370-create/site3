@@ -457,7 +457,7 @@ async function renderCurrent(quality, token) {
     console.error(e);
     if (token !== state.renderToken) return;
     hideProcessing();
-    fail("خطا در ساخت نتیجه. دوباره تلاش کن.");
+    fail(e instanceof AnalysisError ? e.message : "خطا در ساخت نتیجه. دوباره تلاش کن.");
   }
 }
 

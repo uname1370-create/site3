@@ -13,6 +13,8 @@ import { renderBrows } from "./brow/render.js";
 import { renderLips } from "./lip/render.js";
 import { analyzeLiner, LINER_STYLES } from "./liner/analyze.js";
 import { renderLiner } from "./liner/render.js";
+import { AnalysisError, MSG } from "./faceAnalyzer.js";
+import { workerAvailable, postWorker } from "./workers/client.js";
 
 export const QUALITY = {
   fast: { maxSide: 720, strokeScale: 0.65 },
@@ -63,22 +65,19 @@ export async function renderTryOn({ source, analysis, service, styleId, quality 
 
   const frame = ctx.getImageData(0, 0, W, H);
 
+  // Gate: the selected service's area must be fully inside the frame —
+  // surface a helpful Persian message instead of a cropped/bad result.
+  if (analysis.quality && !analysis.quality.features[service]) {
+    throw new AnalysisError("FEATURES_CLIPPED", MSG.FEATURES_CLIPPED);
+  }
+
   if (service === "brow") {
     const style = BROW_STYLES[styleId] || BROW_STYLES.micro;
     const sides = [regions.sides[0], regions.sides[1]];
-    const geoms = [];
+    const geoms = await analyzeBothBrows({ frame, W, H, sides, regions, onStage });
     const fitteds = [];
     for (let i = 0; i < 2; i++) {
-      onStage && onStage(`brow-${i}`);
-      const geom = analyzeBrow({
-        pixels: frame.data,
-        width: W,
-        height: H,
-        side: sides[i],
-        faceWidth: regions.faceWidth,
-      });
-      geoms.push(geom);
-      const fitted = fitBrow(style, geom, browSeed(style.id, sides[i].side), q.strokeScale);
+      const fitted = fitBrow(style, geoms[i], browSeed(style.id, sides[i].side), q.strokeScale);
       fitteds.push(fitted);
     }
     const skinLuma = meanSkinLuma(frame.data, W, H, regions);
@@ -111,6 +110,42 @@ export async function renderTryOn({ source, analysis, service, styleId, quality 
 
   const timings = { totalMs: Math.round(performance.now() - t0) };
   return { canvas, size: { w: W, h: H }, debug, meta: { quality, service, styleId }, timings };
+}
+
+/**
+ * Run the (heaviest) per-column brow analysis for both sides.
+ * Prefers the shared Web Worker (UI stays fluid); falls back to the main
+ * thread when the worker is unavailable or fails.
+ */
+async function analyzeBothBrows({ frame, W, H, sides, regions, onStage }) {
+  if (workerAvailable()) {
+    onStage && onStage("brow-0");
+    try {
+      // Copy the frame: we transfer the copy's buffer, never the live canvas pixels.
+      const copy = frame.data.slice();
+      return await postWorker(
+        { type: "brows", data: copy, width: W, height: H, sides, faceWidth: regions.faceWidth },
+        [copy.buffer],
+        20000
+      );
+    } catch (e) {
+      console.warn("[tryon] worker brow analyze failed → inline:", e.message);
+    }
+  }
+  const out = [];
+  for (let i = 0; i < 2; i++) {
+    onStage && onStage(`brow-${i}`);
+    out.push(
+      analyzeBrow({
+        pixels: frame.data,
+        width: W,
+        height: H,
+        side: sides[i],
+        faceWidth: regions.faceWidth,
+      })
+    );
+  }
+  return out;
 }
 
 function browSeed(styleId, side) {
