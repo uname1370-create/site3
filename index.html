@@ -269,11 +269,13 @@
     const SERVICE_LABELS = { brow: "ابرو", lip: "لب", liner: "خط چشم" };
     const STYLES = {
       brow: [
-        { id: "natural", name: "طبیعی", hint: "تراکم کم، قوس نرم", kind: "natural", color: "#6A4A38" },
-        { id: "micro", name: "میکروبلیدینگ", hint: "تارهای مو مانند", kind: "hairstroke", color: "#3E2A1C" },
-        { id: "powder", name: "سایه پودری", hint: "سر کمرنگ، دم پررنگ", kind: "ombre", color: "#4A3122" },
-        { id: "feather", name: "کرکی", hint: "هوایی و پر مانند", kind: "feather", color: "#5A3D2A" },
-        { id: "bold", name: "کلاسیک بولد", hint: "قوس واضح، لبه تمیز", kind: "bold", color: "#2A1810" }
+        { id: "natural", name: "طبیعی", hint: "سر روشن، دم کمی تیره", kind: "natural", color: "#6A4A38" },
+        { id: "micro", name: "میکروبلیدینگ", hint: "هاشور تار به تار", kind: "hairstroke", color: "#3E2A1C" },
+        { id: "russian", name: "هاشور روسی", hint: "قوس بالاتر، تار منظم", kind: "russian", color: "#2C1C12" },
+        { id: "powder", name: "سایه پودری", hint: "از روشن به تیره", kind: "ombre", color: "#4A3122" },
+        { id: "combo", name: "ترکیبی", hint: "هاشور + سایه تیره", kind: "combo", color: "#3A2618" },
+        { id: "laminate", name: "لمینیت", hint: "تارهای رو به بالا", kind: "laminate", color: "#4A3224" },
+        { id: "bold", name: "کلاسیک بولد", hint: "پر و دم تیره", kind: "bold", color: "#2A1810" }
       ],
       lip: [
         { id: "nude", name: "نود رزی", hint: "ساتین ملایم", color: "#C9897B", finish: "satin", alpha: 0.28 },
@@ -727,31 +729,21 @@
       smoothPath(o, poly, true);
       o.clip();
       const g = o.createLinearGradient(inner.x, inner.y, outer.x, outer.y);
-      if (style.kind === "ombre") {
-        g.addColorStop(0, "rgba(128,96,74,0.08)");
-        g.addColorStop(0.28, "rgba(92,62,44,0.22)");
-        g.addColorStop(0.7, "rgba(58,38,26,0.4)");
-        g.addColorStop(1, "rgba(36,22,14,0.52)");
-      } else if (style.kind === "natural") {
-        g.addColorStop(0, "rgba(130,98,76,0.1)");
-        g.addColorStop(0.45, "rgba(100,74,54,0.18)");
-        g.addColorStop(1, "rgba(78,56,40,0.26)");
-      } else if (style.kind === "bold") {
-        g.addColorStop(0, "rgba(86,58,40,0.22)");
-        g.addColorStop(1, "rgba(40,24,14,0.42)");
-      } else {
-        g.addColorStop(0, "rgba(110,80,58,0.12)");
-        g.addColorStop(1, "rgba(56,36,24,0.32)");
-      }
+      g.addColorStop(0, "rgba(168,132,104,0.12)");
+      g.addColorStop(0.22, "rgba(120,84,58,0.28)");
+      g.addColorStop(0.55, "rgba(72,44,28,0.55)");
+      g.addColorStop(1, style.kind === "natural" ? "rgba(48,30,20,0.62)" : "rgba(22,12,8,0.88)");
       o.fillStyle = g;
       o.fillRect(0, 0, w, h);
       o.restore();
-      compositeLayer(main, w, h, "multiply", style.kind === "bold" ? 0.34 : style.kind === "ombre" ? 0.3 : 0.22);
-      compositeLayer(main, w, h, "soft-light", 0.16);
+      const fillMul = style.kind === "bold" ? 0.58 : style.kind === "ombre" || style.kind === "combo" ? 0.52 : 0.42;
+      compositeLayer(main, w, h, "multiply", fillMul);
+      compositeLayer(main, w, h, "soft-light", 0.12);
 
-      if (style.kind === "hairstroke" || style.kind === "feather" || style.kind === "natural") {
+      const hairKinds = { hairstroke: 1, feather: 1, natural: 1, russian: 1, combo: 1, laminate: 1 };
+      if (hairKinds[style.kind]) {
         o.clearRect(0, 0, w, h);
-        const count = style.kind === "hairstroke" ? 86 : style.kind === "feather" ? 54 : 30;
+        const count = style.kind === "hairstroke" ? 86 : style.kind === "russian" ? 78 : style.kind === "combo" ? 48 : style.kind === "laminate" ? 40 : style.kind === "feather" ? 54 : 30;
         o.save();
         o.strokeStyle = style.color;
         o.lineCap = "round";
@@ -874,11 +866,17 @@
       for (let i = 0; i < line.length; i++) {
         const p = line[i];
         const t = i / n;
-        const amt = innerW + (outerW - innerW) * (t * t);
+        let amt;
+        if (t > 0.9) {
+          const u = (t - 0.9) / 0.1;
+          amt = outerW * (1 - u) + innerW * 0.25 * u;
+        } else {
+          amt = innerW + (outerW - innerW) * Math.pow(t, 1.35);
+        }
         const dx = p.x - origin.x, dy = p.y - origin.y;
         const len = Math.hypot(dx, dy) || 1;
         top.push({ x: p.x + (dx / len) * amt, y: p.y + (dy / len) * amt });
-        bot.push({ x: p.x + (dx / len) * amt * 0.12, y: p.y + (dy / len) * amt * 0.12 });
+        bot.push({ x: p.x, y: p.y });
       }
       return bot.concat(top.slice().reverse());
     }
@@ -890,17 +888,21 @@
       ];
 
       eyes.forEach(({ lash, iris, lower }) => {
-        const line = densify(pts(lm, lash, w, h), 28);
+        const raw = pts(lm, lash, w, h);
+        const line = densify(raw.slice().reverse(), 28);
         const lid = pts(lm, lower, w, h);
         const origin = mapLm(lm, iris, w, h);
         const sz = featSize(line);
         const scale = sz.w / 180;
         const spec = {
-          lash: { inner: 0.55 * scale, outer: 1.35 * scale, blur: 0.45, alpha: 0.62, wing: 0 },
-          classic: { inner: 0.7 * scale, outer: 2.1 * scale, blur: 0.5, alpha: 0.78, wing: sz.w * 0.06 },
-          cat: { inner: 0.75 * scale, outer: 2.35 * scale, blur: 0.42, alpha: 0.84, wing: sz.w * 0.22 },
-          smoky: { inner: 1.1 * scale, outer: 3.4 * scale, blur: 1.6, alpha: 0.52, wing: sz.w * 0.1 }
-        }[style.kind];
+          lash: { inner: 0.5 * scale, outer: 1.4 * scale, blur: 0.4, alpha: 0.72, wing: 0, lift: 0.28 },
+          classic: { inner: 0.65 * scale, outer: 2.2 * scale, blur: 0.42, alpha: 0.86, wing: sz.w * 0.07, lift: 0.26 },
+          cat: { inner: 0.7 * scale, outer: 2.5 * scale, blur: 0.38, alpha: 0.9, wing: sz.w * 0.22, lift: 0.34 },
+          arabic: { inner: 1.2 * scale, outer: 4.8 * scale, blur: 0.5, alpha: 0.94, wing: sz.w * 0.16, lift: 0.18 },
+          fox: { inner: 0.55 * scale, outer: 2.2 * scale, blur: 0.36, alpha: 0.88, wing: sz.w * 0.3, lift: 0.58 },
+          smoky: { inner: 1.0 * scale, outer: 3.6 * scale, blur: 1.5, alpha: 0.62, wing: sz.w * 0.1, lift: 0.22 },
+          wing: { inner: 0.6 * scale, outer: 2.6 * scale, blur: 0.3, alpha: 0.92, wing: sz.w * 0.26, lift: 0.24 }
+        }[style.kind] || { inner: 0.65 * scale, outer: 2.2 * scale, blur: 0.42, alpha: 0.86, wing: sz.w * 0.07, lift: 0.26 };
 
         let ribbonLine = line.slice();
         if (spec.wing > 0) {
@@ -910,26 +912,32 @@
           const d = Math.hypot(dx, dy) || 1;
           const tip = {
             x: a.x + (dx / d) * spec.wing,
-            y: a.y + (dy / d) * spec.wing - spec.wing * 0.32
+            y: a.y + (dy / d) * spec.wing - spec.wing * spec.lift
           };
           const mid = {
-            x: a.x + (dx / d) * spec.wing * 0.45,
-            y: a.y + (dy / d) * spec.wing * 0.45 - spec.wing * 0.12
+            x: a.x + (dx / d) * spec.wing * 0.5,
+            y: a.y + (dy / d) * spec.wing * 0.5 - spec.wing * spec.lift * 0.4
           };
-          ribbonLine = densify([tip, mid, a].concat(line.slice(1)), 36);
+          ribbonLine = densify(line.concat([mid, tip]), 40);
         }
 
         const poly = taperedRibbon(ribbonLine, origin, spec.inner, spec.outer);
+        const innerPt = ribbonLine[0];
+        const outerPt = ribbonLine[ribbonLine.length - 1];
         const o = ensureLayer(w, h);
         o.clearRect(0, 0, w, h);
         o.save();
         o.filter = `blur(${spec.blur}px)`;
-        o.fillStyle = style.color;
+        const g = o.createLinearGradient(innerPt.x, innerPt.y, outerPt.x, outerPt.y);
+        g.addColorStop(0, "rgba(70,52,40,0.28)");
+        g.addColorStop(0.4, "rgba(28,18,12,0.7)");
+        g.addColorStop(1, "rgba(6,4,2,0.96)");
+        o.fillStyle = g;
         smoothPath(o, poly, true);
         o.fill();
         o.restore();
         compositeLayer(main, w, h, "multiply", spec.alpha);
-        compositeLayer(main, w, h, "soft-light", 0.14);
+        compositeLayer(main, w, h, "soft-light", 0.1);
       });
     }
 
