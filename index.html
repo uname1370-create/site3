@@ -285,8 +285,11 @@
       liner: [
         { id: "lash", name: "بن‌مژه", hint: "خیلی ظریف بین مژه‌ها", kind: "lash", color: "#2A2118" },
         { id: "classic", name: "کلاسیک", hint: "خط نازک و تمیز", kind: "classic", color: "#16110E" },
-        { id: "cat", name: "گربه‌ای", hint: "باله ظریف و کشیده", kind: "cat", color: "#0C0A08" },
-        { id: "smoky", name: "دودی", hint: "محو و اسموکی", kind: "smoky", color: "#1A1512" }
+        { id: "cat", name: "گربه‌ای", hint: "باله کشیده و نرم", kind: "cat", color: "#0C0A08" },
+        { id: "arabic", name: "عربی", hint: "ضخیم و پررنگ", kind: "arabic", color: "#090704" },
+        { id: "fox", name: "فاکس‌آی", hint: "گوشه بالا و کشیده", kind: "fox", color: "#0E0A08" },
+        { id: "smoky", name: "دودی", hint: "محو و اسموکی", kind: "smoky", color: "#1A1512" },
+        { id: "wing", name: "بالدار", hint: "باله تیز و مشخص", kind: "wing", color: "#080605" }
       ]
     };
 
@@ -690,8 +693,8 @@
       const inner = { x: (p[4].x + p[5].x) / 2, y: (p[4].y + p[5].y) / 2 };
       const outer = { x: (p[0].x + p[9].x) / 2, y: (p[0].y + p[9].y) / 2 };
       const len = Math.hypot(outer.x - inner.x, outer.y - inner.y) || 1;
-      const tail = kind === "bold" ? 0.07 : kind === "ombre" ? 0.08 : kind === "hairstroke" ? 0.045 : 0.015;
-      const lift = kind === "bold" ? 0.055 : kind === "hairstroke" ? 0.035 : kind === "ombre" ? 0.03 : 0.01;
+      const tail = ({ bold: 0.07, ombre: 0.08, combo: 0.06, hairstroke: 0.045, russian: 0.055, laminate: 0.02 }[kind] || 0.015);
+      const lift = ({ bold: 0.055, russian: 0.075, combo: 0.045, hairstroke: 0.035, ombre: 0.03, laminate: 0.028 }[kind] || 0.01);
       function push(pt, from, amt) {
         const dx = pt.x - from.x, dy = pt.y - from.y;
         const d = Math.hypot(dx, dy) || 1;
@@ -771,12 +774,12 @@
           const tLen = Math.hypot(tx, ty) || 1;
           tx /= tLen; ty /= tLen;
           const head = 1 - t;
-          const slant = style.kind === "feather" ? 0.22 : 0.38;
+          const slant = style.kind === "laminate" ? 0.08 : style.kind === "feather" ? 0.22 : style.kind === "russian" ? 0.48 : 0.38;
           let hx = nx * (0.72 + head * 0.28) + tx * slant * (0.35 + t * 0.65);
           let hy = ny * (0.72 + head * 0.28) + ty * slant * (0.35 + t * 0.65);
           const hLen = Math.hypot(hx, hy) || 1;
           hx /= hLen; hy /= hLen;
-          const jitter = (hash(seed + i) - 0.5) * (style.kind === "feather" ? 0.28 : 0.1);
+          const jitter = (hash(seed + i) - 0.5) * (style.kind === "feather" ? 0.28 : style.kind === "russian" || style.kind === "laminate" ? 0.04 : 0.1);
           const cs = Math.cos(jitter), sn = Math.sin(jitter);
           const dx = hx * cs - hy * sn, dy = hx * sn + hy * cs;
           const along = (hash(seed + i + 9) - 0.5) * thick * 0.18;
@@ -784,17 +787,17 @@
           const startT = 0.08 + hash(seed + i + 4) * 0.22;
           const sx = l.x + nx * thick * startT + px * along;
           const sy = l.y + ny * thick * startT + py * along;
-          const hair = thick * (style.kind === "feather" ? 0.95 : 0.78) * (0.55 + hash(seed + i + 3) * 0.4) * (t < 0.22 ? 0.7 : 1);
+          const hair = thick * (style.kind === "laminate" ? 1.15 : style.kind === "feather" ? 0.95 : 0.78) * (0.55 + hash(seed + i + 3) * 0.4) * (t < 0.22 ? 0.7 : 1);
           const fadeHead = t < 0.18 ? 0.45 + t / 0.18 * 0.55 : 1;
-          o.globalAlpha = (style.kind === "natural" ? 0.22 : 0.32) * fadeHead * (0.5 + hash(seed + i + 5) * 0.5);
-          o.lineWidth = Math.max(0.35, thick * (style.kind === "hairstroke" ? 0.085 : 0.07) * (0.7 + hash(seed + i + 11) * 0.5));
+          o.globalAlpha = (style.kind === "natural" ? 0.22 : style.kind === "combo" ? 0.26 : 0.32) * fadeHead * (0.5 + hash(seed + i + 5) * 0.5);
+          o.lineWidth = Math.max(0.35, thick * (style.kind === "hairstroke" || style.kind === "russian" ? 0.085 : 0.07) * (0.7 + hash(seed + i + 11) * 0.5));
           o.beginPath();
           o.moveTo(sx, sy);
           o.quadraticCurveTo(sx + dx * hair * 0.45, sy + dy * hair * 0.45, sx + dx * hair, sy + dy * hair);
           o.stroke();
         }
         o.restore();
-        compositeLayer(main, w, h, "multiply", style.kind === "hairstroke" ? 0.42 : 0.3);
+        compositeLayer(main, w, h, "multiply", style.kind === "hairstroke" || style.kind === "russian" ? 0.42 : 0.3);
       }
     }
 
