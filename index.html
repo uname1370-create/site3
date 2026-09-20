@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0F3D2E" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="description" content="عسل رجبی | میکروبلیدینگ و شیدینگ لب — تست مجازی و رزرو نوبت" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="عسل رجبی" />
+  <meta name="description" content="عسل رجبی PMU | تست مجازی میکروبلیدینگ، شیدینگ لب و خط چشم روی صورت خودتان + رزرو نوبت — مشهد، برج پاژ" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-180.png" />
   <title>عسل رجبی | میکروبلیدینگ و شیدینگ لب</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -65,6 +71,13 @@
       width: 72px;
       height: 1px;
       background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+    }
+    .tagline {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #E8D5C4;
     }
     .dropzone {
       border: 1.5px dashed rgba(201, 160, 122, 0.7);
@@ -159,7 +172,7 @@
       position: fixed;
       left: 50%;
       bottom: max(1.5rem, env(safe-area-inset-bottom));
-      z-index: 80;
+      z-index: 90;
       transform: translateX(-50%) translateY(18px);
       opacity: 0;
       pointer-events: none;
@@ -169,6 +182,45 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+    /* ---------------- booking sheet (bottom sheet on mobile, modal on desktop) ---------------- */
+    .sheet-backdrop {
+      position: fixed; inset: 0; z-index: 60;
+      background: rgba(7, 25, 18, 0.55);
+      backdrop-filter: blur(3px);
+      opacity: 0; pointer-events: none;
+      transition: opacity .28s ease;
+    }
+    .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+    .sheet {
+      position: fixed; z-index: 70;
+      right: 0; left: 0; bottom: 0;
+      background: #FDFCFB;
+      border-radius: 24px 24px 0 0;
+      max-height: 88svh;
+      overflow-y: auto;
+      padding: 18px 18px calc(20px + env(safe-area-inset-bottom));
+      transform: translateY(103%);
+      transition: transform .32s cubic-bezier(.32, .72, .35, 1);
+      box-shadow: 0 -18px 50px rgba(7, 25, 18, 0.35);
+    }
+    .sheet.open { transform: translateY(0); }
+    @media (min-width: 768px) {
+      .sheet {
+        left: 50%; right: auto; bottom: auto; top: 50%;
+        width: min(470px, 94vw);
+        border-radius: 24px;
+        padding: 22px 22px 24px;
+        transform: translate(-50%, calc(-50% + 26px));
+        opacity: 0;
+      }
+      .sheet.open { transform: translate(-50%, -50%); opacity: 1; }
+    }
+    .sheet-handle {
+      width: 42px; height: 4px; border-radius: 99px;
+      background: rgba(15, 61, 46, 0.18);
+      margin: 0 auto 14px;
+    }
+    @media (min-width: 768px) { .sheet-handle { display: none; } }
   </style>
 </head>
 <body class="font-vazir antialiased">
@@ -176,11 +228,10 @@
 
     <section id="hero" class="relative min-h-[100svh] overflow-hidden">
       <img
-        src="https://raw.githubusercontent.com/uname1370-create/site3/main/asalrajabi.png"
+        src="asalrajabi.png"
         alt="عسل رجبی"
         class="absolute inset-0 h-full w-full object-cover"
         style="object-position: 78% center;"
-        onerror="this.onerror=null;this.src='asalrajabi.png'"
       />
       <div class="hero-overlay absolute inset-0"></div>
       <div class="relative z-10 flex min-h-[100svh] flex-col justify-end px-6 pb-10 pt-[max(2rem,env(safe-area-inset-top))]">
@@ -189,6 +240,7 @@
           <h1 class="text-[1.7rem] font-extrabold leading-snug text-white sm:text-3xl">
             عسل رجبی | میکروبلیدینگ و شیدینگ لب
           </h1>
+          <p class="tagline">«تو زیبایی؛ من فقط کشفش می‌کنم 🪄»</p>
           <div class="my-4 ornament"></div>
           <p class="mb-7 max-w-xs text-[15px] font-light leading-8 text-cream/90">
             قبل از رزرو، نتیجه کار رو روی صورت خودت ببین!
@@ -211,6 +263,7 @@
         <button type="button" data-service="brow" class="chip service-btn active rounded-2xl px-2 text-[13px] font-semibold">ابرو</button>
         <button type="button" data-service="lip" class="chip service-btn rounded-2xl px-2 text-[13px] font-semibold">لب</button>
         <button type="button" data-service="liner" class="chip service-btn rounded-2xl px-2 text-[13px] font-semibold">خط چشم</button>
+        <button type="button" data-service="remove" class="chip service-btn col-span-3 rounded-2xl px-2 text-[13px] font-semibold">ریموو (حذف / اصلاح)</button>
       </div>
 
       <label id="dropzone" class="dropzone mt-6 flex cursor-pointer flex-col items-center justify-center rounded-3xl px-5 py-8">
@@ -244,8 +297,12 @@
 
       <div class="relative mt-6 overflow-hidden rounded-3xl bg-brand-900">
         <div id="placeholder" class="flex aspect-[3/4] flex-col items-center justify-center px-6 text-center">
-          <div class="spinner mb-4"></div>
+          <div id="placeholderIcon" class="mb-4 hidden">
+            <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-3xl">🪄</span>
+          </div>
+          <div id="placeholderSpinner" class="spinner mb-4"></div>
           <p id="placeholderText" class="text-sm font-light leading-7 text-cream/80">برای شروع، یک عکس انتخاب کن</p>
+          <div id="placeholderExtra" class="mt-4 flex flex-col items-center gap-2"></div>
         </div>
 
         <div id="compare" class="relative hidden w-full">
@@ -253,6 +310,7 @@
           <div id="beforeWrap" class="absolute inset-y-0 left-0 overflow-hidden" style="width:50%">
             <canvas id="beforeCanvas" class="block max-w-none"></canvas>
           </div>
+          <canvas id="debugCanvas" class="pointer-events-none absolute inset-0 z-[5] hidden"></canvas>
           <div id="sliderHandle" class="absolute inset-y-0 left-1/2 z-10 flex flex-col items-center justify-center">
             <div class="handle-line absolute inset-y-0 left-1/2 -translate-x-1/2"></div>
             <div class="handle-knob relative z-10 flex items-center justify-center rounded-full text-brand-800">
@@ -268,10 +326,31 @@
         <div id="processing" class="absolute inset-0 z-20 hidden items-center justify-center bg-brand-950/55 backdrop-blur-[2px]">
           <div class="flex flex-col items-center">
             <div class="spinner"></div>
-            <p class="mt-3 text-xs text-cream/90">در حال تشخیص چهره…</p>
+            <p id="processingText" class="mt-3 text-xs text-cream/90">در حال تشخیص چهره…</p>
           </div>
         </div>
       </div>
+
+      <div id="debugPanel" class="mt-3 hidden rounded-2xl border border-gold/25 bg-brand-900/40 p-3">
+        <p class="mb-2 text-[11px] font-bold text-gold-light">لایه‌های دیباگ (فقط توسعه‌دهنده)</p>
+        <div id="debugLayers" class="flex flex-wrap gap-x-4 gap-y-1.5"></div>
+      </div>
+
+      <div id="resultRow" class="mt-3 hidden items-center gap-2">
+        <button id="downloadBtn" type="button" class="chip flex min-h-[44px] grow items-center justify-center gap-2 rounded-2xl px-4 text-[13px] font-semibold">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" />
+          </svg>
+          دانلود نتیجه (PNG)
+        </button>
+        <button id="hqBtn" type="button" class="chip flex min-h-[44px] grow items-center justify-center gap-2 rounded-2xl px-4 text-[13px] font-semibold">
+          ✦ رندر با کیفیت بالا
+        </button>
+      </div>
+
+      <p id="privacyNote" class="mt-2 hidden text-center text-[11px] font-light leading-6 text-brand-800/55">
+        🔒 پردازش عکس به‌طور کامل در مرورگر شما انجام می‌شود؛ هیچ عکسی از دستگاهتان خارج نمی‌شود.
+      </p>
 
       <label id="fullViewLabel" class="chip mt-4 flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-2xl px-4 text-[13px] font-semibold">
         <input id="fullView" type="checkbox" class="h-4 w-4 accent-[#0F3D2E]" />
@@ -291,950 +370,45 @@
       </div>
 
       <button id="wantThis" type="button" class="gold-btn mt-5 flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold opacity-50" disabled>
-        همین مدل رو میخوام! (رزرو نوبت)
+        ✨ همین مدل رو می‌خوام
       </button>
     </section>
 
     <section id="booking" class="px-5 pb-12 pt-8">
-      <p class="text-center text-[11px] font-medium tracking-[0.22em] text-gold-deep">۰۳  ·  رزرو نوبت</p>
-      <h2 class="mt-2 text-center text-xl font-extrabold text-brand-800">فرم رزرو</h2>
+      <p class="text-center text-[11px] font-medium tracking-[0.22em] text-gold-deep">۰۳  ·  هماهنگی و رزرو</p>
+      <h2 class="mt-2 text-center text-xl font-extrabold text-brand-800">بیایید هماهنگ کنیم</h2>
       <p class="mx-auto mt-2 max-w-xs text-center text-sm font-light leading-7 text-brand-800/70">
-        مشخصاتت رو وارد کن؛ بعد از واتساپ یا دایرکت اینستاگرام بفرست.
+        بعد از دیدن نتیجه، درخواستت رو آماده می‌کنم و خودت از واتساپ یا دایرکت برای عسل جان می‌فرستی.
       </p>
 
-      <form id="bookForm" class="mt-6 space-y-3">
-        <div>
-          <label for="name" class="mb-1.5 block text-xs font-medium text-brand-800/70">نام و نام خانوادگی</label>
-          <input id="name" name="name" type="text" required autocomplete="name" class="field w-full rounded-2xl px-4 text-sm" placeholder="مثلاً سارا محمدی" />
-        </div>
-        <div>
-          <label for="phone" class="mb-1.5 block text-xs font-medium text-brand-800/70">شماره تماس</label>
-          <input id="phone" name="phone" type="tel" required inputmode="tel" autocomplete="tel" class="field w-full rounded-2xl px-4 text-sm" placeholder="0912xxxxxxx" />
-        </div>
-        <div>
-          <label for="serviceStyle" class="mb-1.5 block text-xs font-medium text-brand-800/70">خدمت و مدل</label>
-          <input id="serviceStyle" name="serviceStyle" type="text" required class="field w-full rounded-2xl px-4 text-sm" placeholder="ابرو — طبیعی" />
-        </div>
-        <div>
-          <label for="date" class="mb-1.5 block text-xs font-medium text-brand-800/70">تاریخ دلخواه</label>
-          <input id="date" name="date" type="date" required class="field w-full rounded-2xl px-4 text-sm" />
-        </div>
-        <button type="submit" class="gold-btn mt-2 flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold">
-          تایید و ادامه رزرو
+      <div class="mt-6 space-y-2.5">
+        <button id="sheetBtn" type="button" class="gold-btn flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold">
+          ✨ همین مدل رو می‌خوام
         </button>
-      </form>
-
-      <div id="bookingSuccess" class="mt-6 hidden rounded-3xl border border-gold/25 bg-white/55 p-5 shadow-[0_12px_40px_rgba(15,61,46,0.08)] backdrop-blur-md">
-        <p class="text-center text-[11px] font-medium tracking-[0.18em] text-gold-deep">رزرو آماده ارسال</p>
-        <h3 class="mt-2 text-center text-lg font-extrabold text-brand-800">نوبتت ثبت شد</h3>
-        <p class="mx-auto mt-2 max-w-xs text-center text-sm font-light leading-7 text-brand-800/75">
-          نوبتت ثبت شد! تا زمان تایید، پیام را از واتساپ یا دایرکت اینستاگرام بفرست 👇🏼
-        </p>
-        <div class="mt-5 space-y-2.5">
-          <button id="waSend" type="button" class="glass-wa flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[15px] font-bold">
-            ارسال با واتساپ
-          </button>
-          <button id="igSend" type="button" class="glass-ig flex min-h-[54px] w-full items-center justify-center rounded-2xl text-[14px] font-bold">
-            📸 دایرکت اینستاگرام @asalrajabi_pmu
-          </button>
-        </div>
-        <a
-          href="https://instagram.com/asalrajabi_pmu"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="mt-4 block text-center text-xs font-medium text-brand-800/60"
-        >
-          مشاهده استوری‌های امروز پیج عسل رجبی
+        <a id="waDirect" class="glass-wa flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-[14px] font-bold" target="_blank" rel="noopener noreferrer">
+          ارسال مستقیم در واتساپ
+        </a>
+        <a id="igDirect" class="glass-ig flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-[14px] font-bold" target="_blank" rel="noopener noreferrer">
+          📸 دایرکت اینستاگرام @asalrajabi_pmu
+        </a>
+        <a id="telDirect" class="chip flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-[14px] font-bold" href="tel:09058674412">
+          📞 تماس مستقیم — 0905 867 4412
         </a>
       </div>
 
-      <p class="mt-8 text-center text-[11px] font-light text-brand-800/45">
+      <p class="mt-6 text-center text-[11px] font-light leading-6 text-brand-800/55">
+        مشهد — برج پاژ · پاسخگویی هر روز ۱۰ تا ۲۰
+      </p>
+      <p class="mt-4 text-center text-[11px] font-light text-brand-800/45">
         عسل رجبی · میکروبلیدینگ و شیدینگ ·
         <a href="https://instagram.com/asalrajabi_pmu" target="_blank" rel="noopener noreferrer" class="text-gold-deep">@asalrajabi_pmu</a>
       </p>
     </section>
   </div>
 
-  <div id="toast" class="toast rounded-full bg-brand-800 px-4 py-2.5 text-center text-xs font-medium text-cream shadow-lg">متن رزرو کپی شد! در دایرکت Paste کنید ✨</div>
+  <div id="sheetRoot"></div>
+  <div id="toast" class="toast rounded-full bg-brand-800 px-4 py-2.5 text-center text-xs font-medium text-cream shadow-lg"></div>
 
-  <script type="module">
-
-    const SERVICE_LABELS = { brow: "ابرو", lip: "لب", liner: "خط چشم" };
-    const STYLES = {
-      brow: [
-        { id: "natural", name: "طبیعی", hint: "هاشور خیلی ظریف", kind: "natural", color: "#6A4A38" },
-        { id: "micro", name: "میکروبلیدینگ", hint: "تار مو روی ابرو", kind: "hairstroke", color: "#3E2A1C" },
-        { id: "phibrows", name: "فیبروز", hint: "الگوی فی، قوس طلایی", kind: "phibrows", color: "#2C1C12" },
-        { id: "powder", name: "شیدینگ پودری", hint: "سایه سر روشن دم تیره", kind: "ombre", color: "#4A3122" },
-        { id: "combo", name: "ترکیبی", hint: "هاشور + شیدینگ", kind: "combo", color: "#3A2618" },
-        { id: "laminate", name: "لمینیت", hint: "تار شانه خورده به بالا", kind: "laminate", color: "#4A3224" },
-        { id: "bold", name: "بولد بروز", hint: "پر، مشخص، دم تیره", kind: "bold", color: "#2A1810" }
-      ],
-      lip: [
-        { id: "nude", name: "نود رزی", hint: "ساتین ملایم", color: "#C9897B", finish: "satin", alpha: 0.28 },
-        { id: "coral", name: "کالباسی مات", hint: "مرجانی مات", color: "#D07060", finish: "matte", alpha: 0.30 },
-        { id: "brick", name: "آجری", hint: "ولوت گرم", color: "#A24B3A", finish: "matte", alpha: 0.34 },
-        { id: "pink", name: "صورتی مخملی", hint: "ساتین مخمل", color: "#C45C78", finish: "satin", alpha: 0.32 },
-        { id: "berry", name: "بری تیره", hint: "عمیق و غنی", color: "#7A2E44", finish: "satin", alpha: 0.36 }
-      ],
-      liner: [
-        { id: "lash", name: "بن‌مژه", hint: "خیلی ظریف بین مژه‌ها", kind: "lash", color: "#2A2118" },
-        { id: "classic", name: "کلاسیک", hint: "خط نازک و تمیز", kind: "classic", color: "#16110E" },
-        { id: "cat", name: "گربه‌ای", hint: "باله کشیده و نرم", kind: "cat", color: "#0C0A08" },
-        { id: "arabic", name: "عربی", hint: "ضخیم و پررنگ", kind: "arabic", color: "#090704" },
-        { id: "fox", name: "فاکس‌آی", hint: "گوشه بالا و کشیده", kind: "fox", color: "#0E0A08" },
-        { id: "smoky", name: "دودی", hint: "محو و اسموکی", kind: "smoky", color: "#1A1512" },
-        { id: "wing", name: "بالدار", hint: "باله تیز و مشخص", kind: "wing", color: "#080605" }
-      ]
-    };
-
-    const LIP_OUTER = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146];
-    const LIP_INNER = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
-    const LIP_UPPER = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291];
-    const LEFT_BROW = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
-    const RIGHT_BROW = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
-    const LEFT_LASH = [33, 246, 161, 160, 159, 158, 157, 173, 133];
-    const RIGHT_LASH = [263, 466, 388, 387, 386, 385, 384, 398, 362];
-    const LEFT_LOWER_LID = [33, 7, 163, 144];
-    const RIGHT_LOWER_LID = [263, 249, 390, 373];
-    const LEFT_IRIS = 468;
-    const RIGHT_IRIS = 473;
-    const BROW_ZONE = LEFT_BROW.concat(RIGHT_BROW);
-    const EYE_ZONE = LEFT_LASH.concat(RIGHT_LASH, LEFT_LOWER_LID, RIGHT_LOWER_LID, [LEFT_IRIS, RIGHT_IRIS]);
-
-    const state = {
-      service: "brow",
-      styleId: "natural",
-      image: null,
-      landmarks: null,
-      displayW: 0,
-      displayH: 0,
-      split: 0.5,
-      shade: 0.55,
-      fullView: false,
-      crop: { x: 0, y: 0, w: 1, h: 1 }
-    };
-
-    let landmarker = null;
-    let landmarkerPromise = null;
-    let layerCanvas = null;
-
-    const els = {
-      serviceBtns: document.querySelectorAll(".service-btn"),
-      fileInput: document.getElementById("fileInput"),
-      dropzone: document.getElementById("dropzone"),
-      placeholder: document.getElementById("placeholder"),
-      placeholderText: document.getElementById("placeholderText"),
-      compare: document.getElementById("compare"),
-      beforeWrap: document.getElementById("beforeWrap"),
-      beforeCanvas: document.getElementById("beforeCanvas"),
-      afterCanvas: document.getElementById("afterCanvas"),
-      sliderHandle: document.getElementById("sliderHandle"),
-      processing: document.getElementById("processing"),
-      styleRow: document.getElementById("styleRow"),
-      shadeSlider: document.getElementById("shadeSlider"),
-      fullView: document.getElementById("fullView"),
-      fullViewLabel: document.getElementById("fullViewLabel"),
-      wantThis: document.getElementById("wantThis"),
-      serviceStyle: document.getElementById("serviceStyle"),
-      bookForm: document.getElementById("bookForm"),
-      date: document.getElementById("date"),
-      bookingSuccess: document.getElementById("bookingSuccess"),
-      waSend: document.getElementById("waSend"),
-      igSend: document.getElementById("igSend"),
-      toast: document.getElementById("toast")
-    };
-
-    els.date.min = new Date().toISOString().split("T")[0];
-    renderStyles();
-    syncServiceField();
-
-    function currentStyle() {
-      return STYLES[state.service].find((s) => s.id === state.styleId) || STYLES[state.service][0];
-    }
-    function shadeAmt() {
-      const n = Number(state.shade);
-      return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0.55;
-    }
-    function syncServiceField() {
-      els.serviceStyle.value = `${SERVICE_LABELS[state.service]} — ${currentStyle().name}`;
-    }
-
-    function renderStyles() {
-      const list = STYLES[state.service];
-      if (!list.some((s) => s.id === state.styleId)) state.styleId = list[0].id;
-      const basis = list.length === 4 ? "basis-[46%]" : "basis-[30%]";
-      els.styleRow.innerHTML = list.map((s) => `
-        <button type="button" data-style="${s.id}"
-          class="style-chip chip ${basis} grow rounded-2xl px-2 py-2.5 text-center ${s.id === state.styleId ? "active" : ""}">
-          ${state.service === "lip" ? `<span class="mx-auto mb-1.5 block h-3 w-3 rounded-full ring-1 ring-black/10" style="background:${s.color}"></span>` : ""}
-          <span class="block text-[12px] font-bold leading-5">${s.name}</span>
-          <span class="mt-0.5 block text-[10px] font-light leading-4 opacity-70">${s.hint}</span>
-        </button>`).join("");
-      els.styleRow.querySelectorAll(".style-chip").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          state.styleId = btn.dataset.style;
-          renderStyles();
-          syncServiceField();
-          if (state.landmarks) drawAll();
-        });
-      });
-    }
-
-    els.serviceBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        state.service = btn.dataset.service;
-        state.styleId = STYLES[state.service][0].id;
-        els.serviceBtns.forEach((b) => b.classList.toggle("active", b === btn));
-        renderStyles();
-        syncServiceField();
-        if (state.landmarks) {
-          updateCrop();
-          applySplit(0.5);
-          layoutCanvases();
-          drawAll();
-        }
-      });
-    });
-
-    function initLandmarker() {
-      if (landmarkerPromise) return landmarkerPromise;
-      landmarkerPromise = (async () => {
-        const { FaceLandmarker, FilesetResolver } = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/+esm");
-        const wasm = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/wasm";
-        const model = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
-        const vision = await FilesetResolver.forVisionTasks(wasm);
-        const options = (delegate) => ({
-          baseOptions: { modelAssetPath: model, delegate },
-          runningMode: "IMAGE",
-          numFaces: 1
-        });
-        try {
-          landmarker = await FaceLandmarker.createFromOptions(vision, options("GPU"));
-        } catch {
-          landmarker = await FaceLandmarker.createFromOptions(vision, options("CPU"));
-        }
-        if (!state.image) {
-          els.placeholder.querySelector(".spinner")?.classList.add("hidden");
-          els.placeholderText.textContent = "برای شروع، یک عکس انتخاب کن";
-        }
-        return landmarker;
-      })();
-      return landmarkerPromise;
-    }
-    initLandmarker();
-
-    function loadOne(src, cors) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        if (cors) img.crossOrigin = "anonymous";
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error("fail"));
-        img.src = src;
-      });
-    }
-
-    async function loadImage(src, fallback) {
-      try {
-        return await loadOne(src, true);
-      } catch {
-        if (fallback && fallback !== src) return loadOne(fallback, true);
-        try {
-          return await loadOne(src, false);
-        } catch {
-          throw new Error("بارگذاری تصویر ناموفق بود");
-        }
-      }
-    }
-
-    function fileToImage(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => reject(new Error("fail"));
-          img.src = reader.result;
-        };
-        reader.onerror = () => reject(new Error("fail"));
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function processImage(img) {
-      if (img && img.decode) {
-        try { await img.decode(); } catch (_) {}
-      }
-      state.image = img;
-      state.landmarks = null;
-      els.wantThis.disabled = true;
-      els.wantThis.classList.add("opacity-50");
-      els.placeholder.classList.add("hidden");
-      els.compare.classList.remove("hidden");
-      els.processing.classList.remove("hidden");
-      els.processing.classList.add("flex");
-      layoutCanvases();
-      drawOriginalOnly();
-
-      try {
-        await initLandmarker();
-        const result = landmarker.detect(img);
-        const face = result.faceLandmarks && result.faceLandmarks[0];
-        if (!face) {
-          els.placeholderText.textContent = "چهره‌ای پیدا نشد. لطفاً عکس واضح‌تری از روبه‌رو انتخاب کن.";
-          els.placeholder.classList.remove("hidden");
-          els.placeholder.querySelector(".spinner")?.classList.add("hidden");
-          els.compare.classList.add("hidden");
-          return;
-        }
-        state.landmarks = face;
-        updateCrop();
-        applySplit(0.5);
-        layoutCanvases();
-        drawAll();
-        els.wantThis.disabled = false;
-        els.wantThis.classList.remove("opacity-50");
-        document.getElementById("magic").scrollIntoView({ behavior: "smooth", block: "start" });
-      } catch (err) {
-        console.error(err);
-        els.placeholder.classList.add("hidden");
-        els.compare.classList.remove("hidden");
-      } finally {
-        els.processing.classList.add("hidden");
-        els.processing.classList.remove("flex");
-      }
-    }
-
-    function dpr() {
-      return Math.min(window.devicePixelRatio || 1, 3);
-    }
-
-    function setupCanvas(canvas, w, h) {
-      const r = dpr();
-      canvas.width = Math.round(w * r);
-      canvas.height = Math.round(h * r);
-      canvas.style.width = w + "px";
-      canvas.style.height = h + "px";
-      const ctx = canvas.getContext("2d");
-      ctx.setTransform(r, 0, 0, r, 0, 0);
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      return ctx;
-    }
-
-    function ctx2d(canvas) {
-      const ctx = canvas.getContext("2d");
-      const r = dpr();
-      ctx.setTransform(r, 0, 0, r, 0, 0);
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      return ctx;
-    }
-
-    function boxOf(lm, indices) {
-      let minX = 1, minY = 1, maxX = 0, maxY = 0;
-      for (const i of indices) {
-        minX = Math.min(minX, lm[i].x);
-        minY = Math.min(minY, lm[i].y);
-        maxX = Math.max(maxX, lm[i].x);
-        maxY = Math.max(maxY, lm[i].y);
-      }
-      return { minX, minY, maxX, maxY, bw: maxX - minX, bh: maxY - minY };
-    }
-
-    function padBox(b, px, py) {
-      const x = Math.max(0, b.minX - b.bw * px);
-      const y = Math.max(0, b.minY - b.bh * py);
-      const x2 = Math.min(1, b.maxX + b.bw * px);
-      const y2 = Math.min(1, b.maxY + b.bh * py);
-      return { x, y, w: Math.max(0.04, x2 - x), h: Math.max(0.04, y2 - y) };
-    }
-
-    function updateCrop() {
-      const lm = state.landmarks;
-      if (!lm || state.fullView) {
-        state.crop = { x: 0, y: 0, w: 1, h: 1 };
-        return;
-      }
-      if (state.service === "brow") state.crop = padBox(boxOf(lm, BROW_ZONE), 0.18, 0.55);
-      else if (state.service === "lip") state.crop = padBox(boxOf(lm, LIP_OUTER), 0.28, 0.48);
-      else state.crop = padBox(boxOf(lm, EYE_ZONE), 0.2, 0.42);
-    }
-
-    function applyView() {
-      updateCrop();
-      applySplit(0.5);
-      layoutCanvases();
-      if (state.landmarks) drawAll();
-      else if (state.image) drawOriginalOnly();
-    }
-
-    function layoutCanvases() {
-      const img = state.image;
-      if (!img) return;
-      const maxW = els.compare.parentElement.clientWidth || 360;
-      const nw = img.naturalWidth || img.width;
-      const nh = img.naturalHeight || img.height;
-      const c = state.crop || { x: 0, y: 0, w: 1, h: 1 };
-      const aspect = (c.w * nw) / (c.h * nh);
-      state.displayW = maxW;
-      state.displayH = Math.max(120, Math.round(maxW / aspect));
-      setupCanvas(els.afterCanvas, state.displayW, state.displayH);
-      setupCanvas(els.beforeCanvas, state.displayW, state.displayH);
-      els.beforeCanvas.style.width = state.displayW + "px";
-      els.beforeCanvas.style.height = state.displayH + "px";
-      applySplit(state.split);
-    }
-
-    function ensureLayer(w, h) {
-      const r = dpr();
-      if (!layerCanvas) layerCanvas = document.createElement("canvas");
-      layerCanvas.width = Math.round(w * r);
-      layerCanvas.height = Math.round(h * r);
-      return ctx2d(layerCanvas);
-    }
-
-    function drawCropped(ctx, w, h) {
-      const img = state.image;
-      const nw = img.naturalWidth || img.width;
-      const nh = img.naturalHeight || img.height;
-      const c = state.crop || { x: 0, y: 0, w: 1, h: 1 };
-      ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(img, c.x * nw, c.y * nh, c.w * nw, c.h * nh, 0, 0, w, h);
-    }
-
-    function drawOriginalOnly() {
-      const w = state.displayW, h = state.displayH;
-      drawCropped(ctx2d(els.afterCanvas), w, h);
-      drawCropped(ctx2d(els.beforeCanvas), w, h);
-    }
-
-    function drawAll() {
-      drawOriginalOnly();
-      if (!state.landmarks || !state.displayW) return;
-      try {
-        paintMakeup(ctx2d(els.afterCanvas), state.landmarks, state.displayW, state.displayH, state.service, currentStyle());
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    function mapLm(lm, i, w, h) {
-      const c = state.crop || { x: 0, y: 0, w: 1, h: 1 };
-      const p = lm && lm[i];
-      if (!p) return { x: 0, y: 0 };
-      const cw = c.w || 1, ch = c.h || 1;
-      return {
-        x: ((p.x - c.x) / cw) * w,
-        y: ((p.y - c.y) / ch) * h
-      };
-    }
-
-    function pts(lm, indices, w, h) {
-      return indices.map((i) => mapLm(lm, i, w, h));
-    }
-
-    function addSmooth(ctx, points, closed) {
-      if (!points || points.length < 2) return;
-      if (points.length === 2) {
-        ctx.moveTo(points[0].x, points[0].y);
-        ctx.lineTo(points[1].x, points[1].y);
-        return;
-      }
-      const pts = closed
-        ? [points[points.length - 1], ...points, points[0], points[1]]
-        : [points[0], ...points, points[points.length - 1]];
-      ctx.moveTo(pts[1].x, pts[1].y);
-      for (let i = 1; i < pts.length - 2; i++) {
-        const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2];
-        ctx.bezierCurveTo(
-          p1.x + (p2.x - p0.x) / 6,
-          p1.y + (p2.y - p0.y) / 6,
-          p2.x - (p3.x - p1.x) / 6,
-          p2.y - (p3.y - p1.y) / 6,
-          p2.x, p2.y
-        );
-      }
-      if (closed) ctx.closePath();
-    }
-
-    function smoothPath(ctx, points, closed) {
-      ctx.beginPath();
-      addSmooth(ctx, points, closed);
-    }
-
-    function lerpPt(curve, t) {
-      if (!curve.length) return { x: 0, y: 0 };
-      if (curve.length === 1) return { x: curve[0].x, y: curve[0].y };
-      const n = curve.length - 1;
-      const f = Math.max(0, Math.min(1, t)) * n;
-      const i = Math.min(n - 1, Math.floor(f));
-      const u = f - i;
-      return {
-        x: curve[i].x + (curve[i + 1].x - curve[i].x) * u,
-        y: curve[i].y + (curve[i + 1].y - curve[i].y) * u
-      };
-    }
-
-    function densify(curve, steps) {
-      const out = [];
-      for (let i = 0; i <= steps; i++) out.push(lerpPt(curve, i / steps));
-      return out;
-    }
-
-    function featSize(points) {
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-      for (const p of points) {
-        minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
-        maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y);
-      }
-      return { w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
-    }
-
-    function hash(i) {
-      const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
-      return x - Math.floor(x);
-    }
-
-    function compositeLayer(main, w, h, mode, alpha) {
-      main.save();
-      main.globalCompositeOperation = mode;
-      main.globalAlpha = alpha;
-      main.drawImage(layerCanvas, 0, 0, w, h);
-      main.restore();
-    }
-
-    function paintMakeup(ctx, lm, w, h, service, style) {
-      if (service === "brow") {
-        drawBrow(ctx, pts(lm, LEFT_BROW, w, h), w, h, style, 1);
-        drawBrow(ctx, pts(lm, RIGHT_BROW, w, h), w, h, style, 2);
-      } else if (service === "lip") {
-        drawLips(ctx, lm, w, h, style);
-      } else {
-        drawLiner(ctx, lm, w, h, style);
-      }
-    }
-
-    function shapeBrow(poly, kind) {
-      const p = poly.map((q) => ({ x: q.x, y: q.y }));
-      const inner = { x: (p[4].x + p[5].x) / 2, y: (p[4].y + p[5].y) / 2 };
-      const outer = { x: (p[0].x + p[9].x) / 2, y: (p[0].y + p[9].y) / 2 };
-      const len = Math.hypot(outer.x - inner.x, outer.y - inner.y) || 1;
-      const tail = ({ bold: 0.07, ombre: 0.08, combo: 0.06, hairstroke: 0.045, phibrows: 0.05, russian: 0.055, laminate: 0.02 }[kind] || 0.015);
-      const lift = ({ bold: 0.05, phibrows: 0.08, russian: 0.075, combo: 0.04, hairstroke: 0.03, ombre: 0.028, laminate: 0.02 }[kind] || 0.01);
-      function push(pt, from, amt) {
-        const dx = pt.x - from.x, dy = pt.y - from.y;
-        const d = Math.hypot(dx, dy) || 1;
-        pt.x += (dx / d) * len * amt;
-        pt.y += (dy / d) * len * amt;
-      }
-      push(p[0], inner, tail);
-      push(p[9], inner, tail * 0.55);
-      p[2].y -= len * lift;
-      p[1].y -= len * lift * 0.35;
-      p[3].y -= len * lift * 0.12;
-      return p;
-    }
-
-    function drawBrow(main, poly, w, h, style, seed) {
-      poly = shapeBrow(poly, style.kind);
-      const upper = densify(poly.slice(0, 5).reverse(), 24);
-      const lower = densify(poly.slice(5), 24);
-      const inner = { x: (upper[0].x + lower[0].x) / 2, y: (upper[0].y + lower[0].y) / 2 };
-      const outer = {
-        x: (upper[upper.length - 1].x + lower[lower.length - 1].x) / 2,
-        y: (upper[upper.length - 1].y + lower[lower.length - 1].y) / 2
-      };
-      const sz = featSize(poly);
-      const edgeBlur = Math.max(0.7, Math.min(2.2, sz.h * 0.08));
-      const o = ensureLayer(w, h);
-      o.clearRect(0, 0, w, h);
-      o.save();
-      o.filter = `blur(${edgeBlur}px)`;
-      smoothPath(o, poly, true);
-      o.clip();
-      const g = o.createLinearGradient(inner.x, inner.y, outer.x, outer.y);
-      const sh = shadeAmt();
-      g.addColorStop(0, `rgba(168,132,104,${0.06 + sh * 0.16})`);
-      g.addColorStop(0.22, `rgba(120,84,58,${0.14 + sh * 0.28})`);
-      g.addColorStop(0.55, `rgba(72,44,28,${0.28 + sh * 0.42})`);
-      g.addColorStop(1, style.kind === "natural" ? `rgba(48,30,20,${0.32 + sh * 0.48})` : `rgba(22,12,8,${0.42 + sh * 0.56})`);
-      o.fillStyle = g;
-      o.fillRect(0, 0, w, h);
-      o.restore();
-      const fillMul = (style.kind === "bold" ? 0.58 : style.kind === "ombre" || style.kind === "combo" ? 0.52 : 0.42) * (0.4 + sh * 1.05);
-      compositeLayer(main, w, h, "multiply", Math.min(0.92, fillMul));
-      compositeLayer(main, w, h, "soft-light", 0.12);
-
-      const hairKinds = { hairstroke: 1, feather: 1, natural: 1, russian: 1, phibrows: 1, combo: 1, laminate: 1 };
-      if (hairKinds[style.kind]) {
-        o.clearRect(0, 0, w, h);
-        const count = style.kind === "hairstroke" ? 86 : style.kind === "phibrows" || style.kind === "russian" ? 78 : style.kind === "combo" ? 48 : style.kind === "laminate" ? 40 : style.kind === "feather" ? 54 : 30;
-        o.save();
-        o.strokeStyle = style.color;
-        o.lineCap = "round";
-        o.filter = `blur(${Math.max(0.35, sz.h * 0.012)}px)`;
-        smoothPath(o, poly, true);
-        o.clip();
-        for (let i = 0; i < count; i++) {
-          const t = Math.pow(i / (count - 1), 0.92);
-          const u = lerpPt(upper, t);
-          const l = lerpPt(lower, t);
-          const thick = Math.hypot(u.x - l.x, u.y - l.y);
-          const upx = u.x - l.x, upy = u.y - l.y;
-          const upLen = Math.hypot(upx, upy) || 1;
-          const nx = upx / upLen, ny = upy / upLen;
-          const t2 = Math.min(1, t + 0.08);
-          const c2 = lerpPt(upper, t2);
-          const l2 = lerpPt(lower, t2);
-          let tx = (c2.x + l2.x) / 2 - (u.x + l.x) / 2;
-          let ty = (c2.y + l2.y) / 2 - (u.y + l.y) / 2;
-          const tLen = Math.hypot(tx, ty) || 1;
-          tx /= tLen; ty /= tLen;
-          const head = 1 - t;
-          const slant = style.kind === "laminate" ? 0.08 : style.kind === "feather" ? 0.22 : style.kind === "phibrows" || style.kind === "russian" ? 0.48 : 0.38;
-          let hx = nx * (0.72 + head * 0.28) + tx * slant * (0.35 + t * 0.65);
-          let hy = ny * (0.72 + head * 0.28) + ty * slant * (0.35 + t * 0.65);
-          const hLen = Math.hypot(hx, hy) || 1;
-          hx /= hLen; hy /= hLen;
-          const jitter = (hash(seed + i) - 0.5) * (style.kind === "feather" ? 0.28 : style.kind === "phibrows" || style.kind === "russian" || style.kind === "laminate" ? 0.04 : 0.1);
-          const cs = Math.cos(jitter), sn = Math.sin(jitter);
-          const dx = hx * cs - hy * sn, dy = hx * sn + hy * cs;
-          const along = (hash(seed + i + 9) - 0.5) * thick * 0.18;
-          const px = -hy, py = hx;
-          const startT = 0.08 + hash(seed + i + 4) * 0.22;
-          const sx = l.x + nx * thick * startT + px * along;
-          const sy = l.y + ny * thick * startT + py * along;
-          const hair = thick * (style.kind === "laminate" ? 1.15 : style.kind === "feather" ? 0.95 : 0.78) * (0.55 + hash(seed + i + 3) * 0.4) * (t < 0.22 ? 0.7 : 1);
-          const fadeHead = t < 0.18 ? 0.45 + t / 0.18 * 0.55 : 1;
-          o.globalAlpha = (style.kind === "natural" ? 0.22 : style.kind === "combo" ? 0.26 : 0.32) * fadeHead * (0.35 + sh * 0.9) * (0.5 + hash(seed + i + 5) * 0.5);
-          o.lineWidth = Math.max(0.35, thick * (style.kind === "hairstroke" || style.kind === "phibrows" || style.kind === "russian" ? 0.085 : 0.07) * (0.7 + hash(seed + i + 11) * 0.5));
-          o.beginPath();
-          o.moveTo(sx, sy);
-          o.quadraticCurveTo(sx + dx * hair * 0.45, sy + dy * hair * 0.45, sx + dx * hair, sy + dy * hair);
-          o.stroke();
-        }
-        o.restore();
-        compositeLayer(main, w, h, "multiply", (style.kind === "hairstroke" || style.kind === "phibrows" || style.kind === "russian" ? 0.42 : 0.3) * (0.4 + sh * 1.1));
-      }
-    }
-
-    function drawLips(main, lm, w, h, style) {
-      const outer = pts(lm, LIP_OUTER, w, h);
-      const inner = pts(lm, LIP_INNER, w, h);
-      const upper = pts(lm, LIP_UPPER, w, h);
-      const sz = featSize(outer);
-      const edgeBlur = Math.max(0.5, Math.min(1.6, sz.h * 0.045));
-      const o = ensureLayer(w, h);
-      o.clearRect(0, 0, w, h);
-
-      o.save();
-      o.beginPath();
-      addSmooth(o, outer, true);
-      addSmooth(o, inner, true);
-      o.clip("evenodd");
-      o.filter = `blur(${edgeBlur}px)`;
-      const mid = lerpPt(upper, 0.5);
-      const g = o.createRadialGradient(mid.x, mid.y, sz.h * 0.12, mid.x, mid.y, Math.max(sz.w, sz.h) * 0.62);
-      g.addColorStop(0, style.color);
-      g.addColorStop(1, style.color);
-      o.fillStyle = g;
-      o.globalAlpha = 0.9;
-      o.beginPath();
-      addSmooth(o, outer, true);
-      o.fill();
-      o.restore();
-
-      const sh = shadeAmt();
-      compositeLayer(main, w, h, "soft-light", style.finish === "matte" ? 0.42 : 0.54);
-      compositeLayer(main, w, h, "multiply", style.alpha * (0.45 + sh * 1.05));
-
-      o.clearRect(0, 0, w, h);
-      o.save();
-      o.beginPath();
-      addSmooth(o, outer, true);
-      addSmooth(o, inner, true);
-      o.clip("evenodd");
-      o.strokeStyle = style.color;
-      o.globalAlpha = 0.55;
-      o.lineWidth = Math.max(0.6, sz.h * 0.035);
-      o.filter = `blur(${edgeBlur * 0.7}px)`;
-      o.lineJoin = "round";
-      smoothPath(o, outer, true);
-      o.stroke();
-      o.restore();
-      compositeLayer(main, w, h, "multiply", 0.22);
-
-      if (style.finish === "satin") {
-        const bow = densify(upper.slice(2, 9), 12);
-        o.clearRect(0, 0, w, h);
-        o.save();
-        o.beginPath();
-        addSmooth(o, outer, true);
-        addSmooth(o, inner, true);
-        o.clip("evenodd");
-        o.filter = `blur(${Math.max(1.2, sz.h * 0.08)}px)`;
-        o.fillStyle = "#fff6f1";
-        o.globalAlpha = 0.38;
-        o.beginPath();
-        addSmooth(o, bow, false);
-        const cupid = mapLm(lm, 0, w, h);
-        o.lineTo(cupid.x, cupid.y + sz.h * 0.18);
-        o.closePath();
-        o.fill();
-        o.restore();
-        compositeLayer(main, w, h, "soft-light", 0.26);
-      }
-    }
-
-    function lashRibbon(line, origin, innerW, outerW, inset) {
-      const top = [], bot = [];
-      const n = Math.max(1, line.length - 1);
-      for (let i = 0; i < line.length; i++) {
-        const p = line[i];
-        const t = i / n;
-        let amt = innerW + (outerW - innerW) * Math.pow(t, 1.15);
-        if (t > 0.86) amt *= 1 - ((t - 0.86) / 0.14) * 0.82;
-        const dx = p.x - origin.x, dy = p.y - origin.y;
-        const len = Math.hypot(dx, dy) || 1;
-        const ux = dx / len, uy = dy / len;
-        top.push({ x: p.x + ux * amt, y: p.y + uy * amt });
-        bot.push({ x: p.x - ux * amt * inset, y: p.y - uy * amt * inset });
-      }
-      return bot.concat(top.slice().reverse());
-    }
-
-    function drawLiner(main, lm, w, h, style) {
-      const sh = shadeAmt();
-      const scale = Math.max(2.2, w / 95);
-      const eyes = [
-        { lash: LEFT_LASH, iris: LEFT_IRIS, lower: LEFT_LOWER_LID },
-        { lash: RIGHT_LASH, iris: RIGHT_IRIS, lower: RIGHT_LOWER_LID }
-      ];
-
-      eyes.forEach(({ lash, iris, lower }) => {
-        const raw = pts(lm, lash, w, h);
-        const line = densify(raw.slice().reverse(), 32);
-        const lid = pts(lm, lower, w, h);
-        const origin = mapLm(lm, iris, w, h);
-        const spec = {
-          lash: { inner: 1.1 * scale, outer: 2.2 * scale, blur: 0.35, wing: 0, lift: 0.22, inset: 0.55 },
-          classic: { inner: 1.5 * scale, outer: 3.6 * scale, blur: 0.28, wing: 0.08 * w, lift: 0.22, inset: 0.35 },
-          cat: { inner: 1.6 * scale, outer: 4.2 * scale, blur: 0.25, wing: 0.16 * w, lift: 0.38, inset: 0.32 },
-          arabic: { inner: 2.4 * scale, outer: 7.2 * scale, blur: 0.32, wing: 0.12 * w, lift: 0.16, inset: 0.28 },
-          fox: { inner: 1.4 * scale, outer: 3.8 * scale, blur: 0.24, wing: 0.2 * w, lift: 0.62, inset: 0.3 },
-          smoky: { inner: 2.2 * scale, outer: 6.4 * scale, blur: 1.15, wing: 0.08 * w, lift: 0.2, inset: 0.4 },
-          wing: { inner: 1.5 * scale, outer: 4.4 * scale, blur: 0.2, wing: 0.18 * w, lift: 0.26, inset: 0.3 }
-        }[style.kind] || { inner: 1.5 * scale, outer: 3.6 * scale, blur: 0.28, wing: 0.08 * w, lift: 0.22, inset: 0.35 };
-
-        let ribbonLine = line.slice();
-        if (spec.wing > 0) {
-          const a = lid[0];
-          const b = lid[Math.min(1, lid.length - 1)];
-          const dx = a.x - b.x, dy = a.y - b.y;
-          const d = Math.hypot(dx, dy) || 1;
-          const tip = {
-            x: a.x + (dx / d) * spec.wing,
-            y: a.y + (dy / d) * spec.wing - spec.wing * spec.lift
-          };
-          const mid = {
-            x: a.x + (dx / d) * spec.wing * 0.52,
-            y: a.y + (dy / d) * spec.wing * 0.52 - spec.wing * spec.lift * 0.38
-          };
-          ribbonLine = densify(line.concat([mid, tip]), 44);
-        }
-
-        const poly = lashRibbon(ribbonLine, origin, spec.inner, spec.outer, spec.inset);
-        const innerPt = ribbonLine[0];
-        const outerPt = ribbonLine[ribbonLine.length - 1];
-        const o = ensureLayer(w, h);
-        o.clearRect(0, 0, w, h);
-        o.save();
-        o.filter = `blur(${spec.blur}px)`;
-        const g = o.createLinearGradient(innerPt.x, innerPt.y, outerPt.x, outerPt.y);
-        g.addColorStop(0, `rgba(42,28,18,${0.55 + sh * 0.4})`);
-        g.addColorStop(0.45, `rgba(12,8,5,${0.82 + sh * 0.16})`);
-        g.addColorStop(1, `rgba(4,2,1,${0.9 + sh * 0.1})`);
-        o.fillStyle = g;
-        smoothPath(o, poly, true);
-        o.fill();
-        o.filter = "none";
-        o.strokeStyle = `rgba(8,5,3,${0.7 + sh * 0.28})`;
-        o.lineWidth = Math.max(1.2, spec.inner * 0.55);
-        o.lineCap = "round";
-        o.lineJoin = "round";
-        smoothPath(o, ribbonLine, false);
-        o.stroke();
-        o.restore();
-        compositeLayer(main, w, h, "source-over", 0.55 + sh * 0.4);
-        compositeLayer(main, w, h, "multiply", 0.45 + sh * 0.4);
-      });
-    }
-
-    function applySplit(t) {
-      state.split = Math.min(0.92, Math.max(0.08, t));
-      const pct = state.split * 100;
-      els.beforeWrap.style.width = pct + "%";
-      els.sliderHandle.style.left = pct + "%";
-    }
-
-    function pointerToSplit(clientX) {
-      const rect = els.compare.getBoundingClientRect();
-      return (clientX - rect.left) / rect.width;
-    }
-
-    let dragging = false;
-    els.compare.addEventListener("pointerdown", (e) => {
-      els.compare.setPointerCapture(e.pointerId);
-      dragging = true;
-      applySplit(pointerToSplit(e.clientX));
-    });
-    els.compare.addEventListener("pointermove", (e) => {
-      if (!dragging) return;
-      applySplit(pointerToSplit(e.clientX));
-    });
-    els.compare.addEventListener("pointerup", () => { dragging = false; });
-    els.compare.addEventListener("pointercancel", () => { dragging = false; });
-
-    els.fileInput.addEventListener("change", async (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      try {
-        await processImage(await fileToImage(file));
-      } catch (err) {
-        console.error(err);
-        els.placeholderText.textContent = "آپلود عکس ناموفق بود. دوباره تلاش کن.";
-        els.placeholder.classList.remove("hidden");
-      } finally {
-        els.fileInput.value = "";
-      }
-    });
-
-    ["dragenter", "dragover"].forEach((ev) => {
-      els.dropzone.addEventListener(ev, (e) => { e.preventDefault(); els.dropzone.classList.add("dragover"); });
-    });
-    ["dragleave", "drop"].forEach((ev) => {
-      els.dropzone.addEventListener(ev, (e) => { e.preventDefault(); els.dropzone.classList.remove("dragover"); });
-    });
-    els.dropzone.addEventListener("drop", async (e) => {
-      const file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (!file || !file.type.startsWith("image/")) return;
-      try {
-        await processImage(await fileToImage(file));
-      } catch (err) {
-        console.error(err);
-      }
-    });
-
-    document.querySelectorAll(".preset-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        try {
-          await processImage(await loadImage(btn.dataset.src, btn.dataset.fallback));
-        } catch (err) {
-          console.error(err);
-          els.placeholderText.textContent = "بارگذاری عکس نمونه ناموفق بود.";
-        }
-      });
-    });
-
-    if (els.shadeSlider) {
-      const applyShade = () => {
-        state.shade = Number(els.shadeSlider.value) / 100;
-        if (state.landmarks) drawAll();
-      };
-      els.shadeSlider.addEventListener("input", applyShade);
-      els.shadeSlider.addEventListener("change", applyShade);
-      els.shadeSlider.addEventListener("pointerdown", (e) => e.stopPropagation());
-    }
-
-    if (els.fullView) {
-      els.fullView.addEventListener("change", () => {
-        state.fullView = !!els.fullView.checked;
-        if (els.fullViewLabel) els.fullViewLabel.classList.toggle("active", state.fullView);
-        applyView();
-      });
-    }
-
-    els.wantThis.addEventListener("click", () => {
-      syncServiceField();
-      document.getElementById("booking").scrollIntoView({ behavior: "smooth" });
-    });
-
-    let bookingMessage = "";
-    let toastTimer;
-
-    function showToast(text) {
-      if (!els.toast) return;
-      els.toast.textContent = text;
-      els.toast.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2600);
-    }
-
-    async function copyBookingText(text) {
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(text);
-          return true;
-        }
-      } catch (_) {}
-      try {
-        const area = document.createElement("textarea");
-        area.value = text;
-        area.setAttribute("readonly", "");
-        area.style.position = "fixed";
-        area.style.top = "-999px";
-        document.body.appendChild(area);
-        area.select();
-        const ok = document.execCommand("copy");
-        document.body.removeChild(area);
-        return ok;
-      } catch (_) {
-        return false;
-      }
-    }
-
-    els.bookForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const name = document.getElementById("name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const serviceStyle = els.serviceStyle.value.trim();
-      const date = document.getElementById("date").value;
-      const prettyDate = date ? new Date(date + "T00:00:00").toLocaleDateString("fa-IR") : date;
-      bookingMessage =
-        `سلام عسل جان 🌿\n` +
-        `می‌خوام نوبت رزرو کنم.\n\n` +
-        `نام: ${name}\n` +
-        `شماره: ${phone}\n` +
-        `خدمات: ${serviceStyle}\n` +
-        `تاریخ دلخواه: ${prettyDate}`;
-      els.bookForm.classList.add("hidden");
-      els.bookingSuccess.classList.remove("hidden");
-      els.bookingSuccess.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-
-    els.waSend.addEventListener("click", () => {
-      if (!bookingMessage) return;
-      window.open(`https://wa.me/989150000000?text=${encodeURIComponent(bookingMessage)}`, "_blank", "noopener,noreferrer");
-    });
-
-    els.igSend.addEventListener("click", async () => {
-      if (!bookingMessage) return;
-      const copied = await copyBookingText(bookingMessage);
-      showToast(copied ? "متن رزرو کپی شد! در دایرکت Paste کنید ✨" : "متن کپی نشد؛ دستی کپی کن و در دایرکت بفرست");
-      window.open("https://ig.me/m/asalrajabi_pmu", "_blank", "noopener,noreferrer");
-    });
-
-    let resizeTimer;
-    window.addEventListener("resize", () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        if (!state.image) return;
-        layoutCanvases();
-        if (state.landmarks) drawAll();
-        else drawOriginalOnly();
-      }, 120);
-    });
-  </script>
+  <script type="module" src="js/tryon/app.js"></script>
 </body>
 </html>
