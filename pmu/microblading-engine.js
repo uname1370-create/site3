@@ -102,7 +102,7 @@ export function drawMicroblading(main,lm,w,h,style,crop,shade=.55,seed=1,referen
   if(!lm||lm.length<400)return;
   if(style?.kind!=="hairstroke"&&style?.kind!=="phibrows")return;
   if(!referenceImage||!referenceLandmarks||referenceLandmarks.length<400)return;
-  const strength=clamp(Number(shade)),refCropL=normalizedCrop(referenceLandmarks,LEFT_BROW,.24,.95),refCropR=normalizedCrop(referenceLandmarks,RIGHT_BROW,.24,.95);
+  const strength=clamp(Number(shade)),refCropL=normalizedCrop(referenceLandmarks,LEFT_BROW,.24,.45),refCropR=normalizedCrop(referenceLandmarks,RIGHT_BROW,.24,.45);
   for(const [ids,refCrop] of [[LEFT_BROW,refCropL],[RIGHT_BROW,refCropR]]){
     const userG=buildRows(geometry(lm,ids,w,h,crop));reduceOldBrow(main,userG,w,h);
     const layer=document.createElement("canvas");layer.width=Math.ceil(w);layer.height=Math.ceil(h);
