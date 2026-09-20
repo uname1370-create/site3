@@ -591,7 +591,7 @@
       }
       if (state.service === "brow") state.crop = padBox(boxOf(lm, BROW_ZONE), 0.18, 0.55);
       else if (state.service === "lip") state.crop = padBox(boxOf(lm, LIP_OUTER), 0.28, 0.48);
-      else state.crop = padBox(boxOf(lm, EYE_ZONE), 0.28, 0.72);
+      else state.crop = padBox(boxOf(lm, EYE_ZONE), 0.2, 0.42);
     }
 
     function layoutCanvases() {
@@ -912,28 +912,26 @@
       }
     }
 
-    function taperedRibbon(line, origin, innerW, outerW) {
+    function lashRibbon(line, origin, innerW, outerW, inset) {
       const top = [], bot = [];
       const n = Math.max(1, line.length - 1);
       for (let i = 0; i < line.length; i++) {
         const p = line[i];
         const t = i / n;
-        let amt;
-        if (t > 0.9) {
-          const u = (t - 0.9) / 0.1;
-          amt = outerW * (1 - u) + innerW * 0.25 * u;
-        } else {
-          amt = innerW + (outerW - innerW) * Math.pow(t, 1.35);
-        }
+        let amt = innerW + (outerW - innerW) * Math.pow(t, 1.15);
+        if (t > 0.86) amt *= 1 - ((t - 0.86) / 0.14) * 0.82;
         const dx = p.x - origin.x, dy = p.y - origin.y;
         const len = Math.hypot(dx, dy) || 1;
-        top.push({ x: p.x + (dx / len) * amt, y: p.y + (dy / len) * amt });
-        bot.push({ x: p.x, y: p.y });
+        const ux = dx / len, uy = dy / len;
+        top.push({ x: p.x + ux * amt, y: p.y + uy * amt });
+        bot.push({ x: p.x - ux * amt * inset, y: p.y - uy * amt * inset });
       }
       return bot.concat(top.slice().reverse());
     }
 
     function drawLiner(main, lm, w, h, style) {
+      const sh = shadeAmt();
+      const scale = Math.max(2.2, w / 95);
       const eyes = [
         { lash: LEFT_LASH, iris: LEFT_IRIS, lower: LEFT_LOWER_LID },
         { lash: RIGHT_LASH, iris: RIGHT_IRIS, lower: RIGHT_LOWER_LID }
@@ -941,20 +939,18 @@
 
       eyes.forEach(({ lash, iris, lower }) => {
         const raw = pts(lm, lash, w, h);
-        const line = densify(raw.slice().reverse(), 28);
+        const line = densify(raw.slice().reverse(), 32);
         const lid = pts(lm, lower, w, h);
         const origin = mapLm(lm, iris, w, h);
-        const sz = featSize(line);
-        const scale = sz.w / 180;
         const spec = {
-          lash: { inner: 0.5 * scale, outer: 1.4 * scale, blur: 0.4, alpha: 0.72, wing: 0, lift: 0.28 },
-          classic: { inner: 0.65 * scale, outer: 2.2 * scale, blur: 0.42, alpha: 0.86, wing: sz.w * 0.07, lift: 0.26 },
-          cat: { inner: 0.7 * scale, outer: 2.5 * scale, blur: 0.38, alpha: 0.9, wing: sz.w * 0.22, lift: 0.34 },
-          arabic: { inner: 1.2 * scale, outer: 4.8 * scale, blur: 0.5, alpha: 0.94, wing: sz.w * 0.16, lift: 0.18 },
-          fox: { inner: 0.55 * scale, outer: 2.2 * scale, blur: 0.36, alpha: 0.88, wing: sz.w * 0.3, lift: 0.58 },
-          smoky: { inner: 1.0 * scale, outer: 3.6 * scale, blur: 1.5, alpha: 0.62, wing: sz.w * 0.1, lift: 0.22 },
-          wing: { inner: 0.6 * scale, outer: 2.6 * scale, blur: 0.3, alpha: 0.92, wing: sz.w * 0.26, lift: 0.24 }
-        }[style.kind] || { inner: 0.65 * scale, outer: 2.2 * scale, blur: 0.42, alpha: 0.86, wing: sz.w * 0.07, lift: 0.26 };
+          lash: { inner: 1.1 * scale, outer: 2.2 * scale, blur: 0.35, wing: 0, lift: 0.22, inset: 0.55 },
+          classic: { inner: 1.5 * scale, outer: 3.6 * scale, blur: 0.28, wing: 0.08 * w, lift: 0.22, inset: 0.35 },
+          cat: { inner: 1.6 * scale, outer: 4.2 * scale, blur: 0.25, wing: 0.16 * w, lift: 0.38, inset: 0.32 },
+          arabic: { inner: 2.4 * scale, outer: 7.2 * scale, blur: 0.32, wing: 0.12 * w, lift: 0.16, inset: 0.28 },
+          fox: { inner: 1.4 * scale, outer: 3.8 * scale, blur: 0.24, wing: 0.2 * w, lift: 0.62, inset: 0.3 },
+          smoky: { inner: 2.2 * scale, outer: 6.4 * scale, blur: 1.15, wing: 0.08 * w, lift: 0.2, inset: 0.4 },
+          wing: { inner: 1.5 * scale, outer: 4.4 * scale, blur: 0.2, wing: 0.18 * w, lift: 0.26, inset: 0.3 }
+        }[style.kind] || { inner: 1.5 * scale, outer: 3.6 * scale, blur: 0.28, wing: 0.08 * w, lift: 0.22, inset: 0.35 };
 
         let ribbonLine = line.slice();
         if (spec.wing > 0) {
@@ -967,30 +963,36 @@
             y: a.y + (dy / d) * spec.wing - spec.wing * spec.lift
           };
           const mid = {
-            x: a.x + (dx / d) * spec.wing * 0.5,
-            y: a.y + (dy / d) * spec.wing * 0.5 - spec.wing * spec.lift * 0.4
+            x: a.x + (dx / d) * spec.wing * 0.52,
+            y: a.y + (dy / d) * spec.wing * 0.52 - spec.wing * spec.lift * 0.38
           };
-          ribbonLine = densify(line.concat([mid, tip]), 40);
+          ribbonLine = densify(line.concat([mid, tip]), 44);
         }
 
-        const poly = taperedRibbon(ribbonLine, origin, spec.inner, spec.outer);
+        const poly = lashRibbon(ribbonLine, origin, spec.inner, spec.outer, spec.inset);
         const innerPt = ribbonLine[0];
         const outerPt = ribbonLine[ribbonLine.length - 1];
-        const sh = shadeAmt();
         const o = ensureLayer(w, h);
         o.clearRect(0, 0, w, h);
         o.save();
         o.filter = `blur(${spec.blur}px)`;
         const g = o.createLinearGradient(innerPt.x, innerPt.y, outerPt.x, outerPt.y);
-        g.addColorStop(0, `rgba(70,52,40,${0.1 + sh * 0.4})`);
-        g.addColorStop(0.4, `rgba(28,18,12,${0.3 + sh * 0.55})`);
-        g.addColorStop(1, `rgba(6,4,2,${0.45 + sh * 0.55})`);
+        g.addColorStop(0, `rgba(42,28,18,${0.55 + sh * 0.4})`);
+        g.addColorStop(0.45, `rgba(12,8,5,${0.82 + sh * 0.16})`);
+        g.addColorStop(1, `rgba(4,2,1,${0.9 + sh * 0.1})`);
         o.fillStyle = g;
         smoothPath(o, poly, true);
         o.fill();
+        o.filter = "none";
+        o.strokeStyle = `rgba(8,5,3,${0.7 + sh * 0.28})`;
+        o.lineWidth = Math.max(1.2, spec.inner * 0.55);
+        o.lineCap = "round";
+        o.lineJoin = "round";
+        smoothPath(o, ribbonLine, false);
+        o.stroke();
         o.restore();
-        compositeLayer(main, w, h, "multiply", Math.min(0.98, spec.alpha * (0.25 + sh * 1.15)));
-        compositeLayer(main, w, h, "soft-light", 0.08 + sh * 0.12);
+        compositeLayer(main, w, h, "source-over", 0.55 + sh * 0.4);
+        compositeLayer(main, w, h, "multiply", 0.45 + sh * 0.4);
       });
     }
 
