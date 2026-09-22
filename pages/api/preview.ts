@@ -1,1 +1,121 @@
-import type {NextApiRequest,NextApiResponse} from "next";import formidable,{File} from "formidable";import fs from "fs/promises";export const config={api:{bodyParser:false}};async function parse(req:NextApiRequest){return await new Promise<any>((resolve,reject)=>formidable({maxFileSize:5242880}).parse(req,(e,fields,files)=>e?reject(e):resolve({fields,files})))}async function call(base:string,key:string,model:string,image:string,prompt:string,runware=false){const b64=(await fs.readFile(image)).toString("base64");const mime="image/jpeg";const uri="data:"+mime+";base64,"+b64;const body=runware?{taskType:"imageInference",taskUUID:crypto.randomUUID(),model,positivePrompt:prompt,inputImages:[uri],outputType:["URL","base64Data"]}:{model,prompt,image:uri,response_format:"b64_json"};const res=await fetch(runware?base:base+"/images/generations",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+key},body:JSON.stringify(body)});if(!res.ok)throw new Error("provider");const response=await res.json();const img=response.data?.[0];const url=img?.url??img?.imageURL??(img?.b64_json?"data:image/png;base64,"+img.b64_json:null)??(img?.imageBase64Data?"data:image/png;base64,"+img.imageBase64Data:null);if(!url)throw new Error("هیچ تصویری دریافت نشد");return url}export default async function handler(req:NextApiRequest,res:NextApiResponse){if(req.method!=="POST")return res.status(405).end();try{const d=await parse(req);const x=d.files.image as File|File[];const file=Array.isArray(x)?x[0]:x;if(!file)return res.status(400).json({error:"فقط عکس JPG و PNG قابل قبول است"});const service=String(d.fields.service||"");const style=String(d.fields.style||"");const color=String(d.fields.color||"");const prompt=service.includes("میکرو")?"Apply "+style+" microblading eyebrows with "+color+" color on this face. Keep entire face, skin, hair, lighting and background identical. Only modify eyebrows. Natural healed microblading result, realistic hair strokes, professional permanent makeup result.":service.includes("خط چشم")?"Apply "+style+" permanent eyeliner with "+color+" color on this face. Keep entire face, skin, hair, lighting and background identical. Only modify eyeliner area. Natural healed result, professional permanent makeup.":"Apply "+style+" lip shading with "+color+" color on this face. Keep entire face, skin, hair, lighting and background identical. Only modify lips. Natural healed result, professional permanent makeup.";const providers=[["https://api.runware.ai/v1",process.env.RUNWARE_API_KEY,"flux-kontext",true],["https://api.siliconflow.cn/v1",process.env.SILICONFLOW_API_KEY,"Qwen/Qwen-Image-Edit",false],["https://api.aimlapi.com/v1",process.env.AIMLAPI_API_KEY,"flux/kontext-pro/image-to-image",false],["https://gen.pollinations.ai/v1",process.env.POLLINATIONS_API_KEY,"kontext",false]] as const;for(const [base,key,model,rw] of providers){if(!key)continue;try{const url=await call(base,key,model,file.filepath,prompt,rw);return res.status(200).json({url})}catch{}}return res.status(500).json({error:"خطا در پردازش تصویر. لطفاً دوباره امتحان کنید"})}catch{return res.status(500).json({error:"خطا در پردازش تصویر. لطفاً دوباره امتحان کنید"})}}
+import type { NextApiRequest, NextApiResponse } from "next";
+import formidable, { File } from "formidable";
+import fs from "fs/promises";
+
+export const config = { api: { bodyParser: false } };
+
+async function parse(req: NextApiRequest) {
+  return await new Promise<any>((resolve, reject) =>
+    formidable({ maxFileSize: 5242880 }).parse(req, (e, fields, files) =>
+      e ? reject(e) : resolve({ fields, files })
+    )
+  );
+}
+
+async function call(
+  base: string,
+  key: string,
+  model: string,
+  image: string,
+  prompt: string,
+  runware = false
+) {
+  const b64 = (await fs.readFile(image)).toString("base64");
+  const mime = "image/jpeg";
+  const uri = "data:" + mime + ";base64," + b64;
+
+  const body = runware
+    ? {
+        taskType: "imageInference",
+        taskUUID: crypto.randomUUID(),
+        model,
+        positivePrompt: prompt,
+        inputImages: [uri],
+        outputType: ["URL", "base64Data"],
+      }
+    : {
+        model,
+        prompt,
+        image: uri,
+        response_format: "b64_json",
+      };
+
+  const res = await fetch(runware ? base : base + "/images/generations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + key,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) throw new Error("provider");
+
+  const response = await res.json();
+  const img = response.data?.[0];
+  const url =
+    img?.url ??
+    img?.imageURL ??
+    (img?.b64_json ? "data:image/png;base64," + img.b64_json : null) ??
+    (img?.imageBase64Data
+      ? "data:image/png;base64," + img.imageBase64Data
+      : null);
+
+  if (!url) throw new Error("هیچ تصویری دریافت نشد");
+  return url;
+}
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") return res.status(405).end();
+
+  try {
+    const d = await parse(req);
+    const x = d.files.image as File | File[];
+    const file = Array.isArray(x) ? x[0] : x;
+
+    if (!file) {
+      return res.status(400).json({ error: "فقط عکس JPG و PNG قابل قبول است" });
+    }
+
+    const service = String(d.fields.service || "");
+    const style = String(d.fields.style || "");
+    const color = String(d.fields.color || "");
+
+    const prompt = service.includes("میکرو")
+      ? "Apply " +
+        style +
+        " microblading eyebrows with " +
+        color +
+        " color on this face. Keep entire face, skin, hair, lighting and background identical. Only modify eyebrows. Natural healed microblading result, realistic hair strokes, professional permanent makeup result."
+      : service.includes("خط چشم")
+        ? "Apply " +
+          style +
+          " permanent eyeliner with " +
+          color +
+          " color on this face. Keep entire face, skin, hair, lighting and background identical. Only modify eyeliner area. Natural healed result, professional permanent makeup."
+        : "Apply " +
+          style +
+          " lip shading with " +
+          color +
+          " color on this face. Keep entire face, skin, hair, lighting and background identical. Only modify lips. Natural healed result, professional permanent makeup.";
+
+    const providers = [
+      ["https://api.runware.ai/v1", process.env.RUNWARE_API_KEY, "flux-kontext", true],
+      ["https://api.siliconflow.cn/v1", process.env.SILICONFLOW_API_KEY, "Qwen/Qwen-Image-Edit", false],
+      ["https://api.aimlapi.com/v1", process.env.AIMLAPI_API_KEY, "flux/kontext-pro/image-to-image", false],
+      ["https://gen.pollinations.ai/v1", process.env.POLLINATIONS_API_KEY, "kontext", false],
+    ] as const;
+
+    for (const [base, key, model, rw] of providers) {
+      if (!key) continue;
+      try {
+        const url = await call(base, key, model, file.filepath, prompt, rw);
+        return res.status(200).json({ url });
+      } catch {}
+    }
+
+    return res.status(500).json({ error: "خطا در پردازش تصویر. لطفاً دوباره امتحان کنید" });
+  } catch {
+    return res.status(500).json({ error: "خطا در پردازش تصویر. لطفاً دوباره امتحان کنید" });
+  }
+}

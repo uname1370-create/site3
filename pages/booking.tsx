@@ -1,1 +1,41 @@
-import {useState} from "react";import Layout from "../components/Layout";import {services} from "../lib/services";export default function Booking(){const [f,setF]=useState({name:"",phone:"",service:"eyebrows",style:"",color:"",date:"",message:""});const s=services.find(x=>x.id===f.service)!;async function submit(e:any){e.preventDefault();const r=await fetch("/api/booking",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(f)});alert(r.ok?"نوبت شما ثبت شد":"خطا در ثبت نوبت")}return <Layout><main className="container-lux py-12"><form onSubmit={submit} className="max-w-2xl mx-auto bg-white rounded-[2rem] shadow-luxury p-7 space-y-5"><h1 className="text-3xl font-bold">رزرو نوبت</h1><input required value={f.name} onChange={e=>setF({...f,name:e.target.value})} placeholder="نام و نام خانوادگی" className="w-full rounded-xl border p-3"/><input required value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} placeholder="شماره تماس" className="w-full rounded-xl border p-3"/><select className="w-full rounded-xl border p-3" value={f.service} onChange={e=>setF({...f,service:e.target.value,style:""})}>{services.map(x=><option key={x.id} value={x.id}>{x.title}</option>)}</select><select required className="w-full rounded-xl border p-3" value={f.style} onChange={e=>setF({...f,style:e.target.value})}><option value="">مدل را انتخاب کنید</option>{s.styles.map(x=><option key={x.id}>{x.title}</option>)}</select><input value={f.color} onChange={e=>setF({...f,color:e.target.value})} placeholder="رنگ انتخابی" className="w-full rounded-xl border p-3"/><input required value={f.date} onChange={e=>setF({...f,date:e.target.value})} placeholder="تاریخ پیشنهادی" className="w-full rounded-xl border p-3"/><textarea value={f.message} onChange={e=>setF({...f,message:e.target.value})} placeholder="توضیحات" className="w-full rounded-xl border p-3 min-h-28"/><button className="gold-btn w-full rounded-xl py-3 font-bold">ثبت درخواست</button></form></main></Layout>}
+import { useState } from "react";
+import Layout from "../components/Layout";
+import { services } from "../lib/services";
+
+export default function Booking() {
+  const [f, setF] = useState({ name: "", phone: "", service: "eyebrows", style: "", color: "", date: "", message: "" });
+  const s = services.find((x) => x.id === f.service)!;
+
+  async function submit(e: any) {
+    e.preventDefault();
+    const r = await fetch("/api/booking", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(f),
+    });
+    alert(r.ok ? "نوبت شما ثبت شد" : "خطا در ثبت نوبت");
+  }
+
+  return (
+    <Layout>
+      <main className="container-lux py-12">
+        <form onSubmit={submit} className="max-w-2xl mx-auto bg-white rounded-[2rem] shadow-luxury p-7 space-y-5">
+          <h1 className="text-3xl font-bold">رزرو نوبت</h1>
+          <input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="نام و نام خانوادگی" className="w-full rounded-xl border p-3" />
+          <input required value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} placeholder="شماره تماس" className="w-full rounded-xl border p-3" />
+          <select className="w-full rounded-xl border p-3" value={f.service} onChange={(e) => setF({ ...f, service: e.target.value, style: "" })}>
+            {services.map((x) => <option key={x.id} value={x.id}>{x.title}</option>)}
+          </select>
+          <select required className="w-full rounded-xl border p-3" value={f.style} onChange={(e) => setF({ ...f, style: e.target.value })}>
+            <option value="">مدل را انتخاب کنید</option>
+            {s.styles.map((x) => <option key={x.id}>{x.title}</option>)}
+          </select>
+          <input value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} placeholder="رنگ انتخابی" className="w-full rounded-xl border p-3" />
+          <input required value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} placeholder="تاریخ پیشنهادی" className="w-full rounded-xl border p-3" />
+          <textarea value={f.message} onChange={(e) => setF({ ...f, message: e.target.value })} placeholder="توضیحات" className="w-full rounded-xl border p-3 min-h-28" />
+          <button className="gold-btn w-full rounded-xl py-3 font-bold">ثبت درخواست</button>
+        </form>
+      </main>
+    </Layout>
+  );
+}
