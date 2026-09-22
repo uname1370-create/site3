@@ -1,0 +1,1 @@
+module.exports={content:["./pages/**/*.{js,ts,jsx,tsx}","./components/**/*.{js,ts,jsx,tsx}"],theme:{extend:{colors:{gold:"#C9A96E",cream:"#FFF8F0",ink:"#2D2D2D",goldDark:"#B8934D"},boxShadow:{luxury:"0 16px 45px rgba(75,54,24,.12)"}}},plugins:[]};
