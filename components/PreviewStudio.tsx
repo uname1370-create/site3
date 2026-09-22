@@ -1,1 +1,110 @@
-import {useState} from "react";import {services} from "../lib/services";import {ReactCompareSlider,ReactCompareSliderImage} from "react-compare-slider";export default function PreviewStudio(){const [service,setService]=useState(services[0]);const [style,setStyle]=useState<any>(null);const [color,setColor]=useState("");const [file,setFile]=useState<File|null>(null);const [url,setUrl]=useState("");const [busy,setBusy]=useState(false);const [err,setErr]=useState("");async function run(){setErr("");if(!file){setErr("لطفاً عکس چهره را انتخاب کنید");return}if(file.size>5242880){setErr("حجم عکس نباید بیشتر از ۵ مگابایت باشد");return}if(!["image/jpeg","image/png"].includes(file.type)){setErr("فقط عکس JPG و PNG قابل قبول است");return}if(!style||!color){setErr("مدل و رنگ را انتخاب کنید");return}setBusy(true);try{const fd=new FormData();fd.append("image",file);fd.append("service",service.title);fd.append("style",style.title);fd.append("color",color);const r=await fetch("/api/preview",{method:"POST",body:fd});const j=await r.json();if(!r.ok)throw 0;setUrl(j.url)}catch{setErr("خطا در پردازش تصویر. لطفاً دوباره امتحان کنید")}finally{setBusy(false)}}return <section className="container-lux py-12"><div className="rounded-[2rem] bg-white shadow-luxury p-6"><h2 className="text-3xl font-bold">پیش‌نمایش هوش مصنوعی</h2><div className="flex flex-wrap gap-2 mt-6">{services.map(s=><button key={s.id} onClick={()=>{setService(s);setStyle(null);setColor("")}} className={"rounded-full px-4 py-2 "+(service.id===s.id?"bg-gold text-white":"bg-gold/10")}>{s.title}</button>)}</div><div className="grid md:grid-cols-2 gap-7 mt-6"><div><div className="grid grid-cols-2 gap-3">{service.styles.map(s=><button key={s.id} onClick={()=>{setStyle(s);setColor(s.colors[0].name)}} className={"border rounded-2xl p-3 text-right "+(style?.id===s.id?"border-gold ring-2 ring-gold/20":"")}><b>{s.title}</b><div className="text-xs text-gray-500">{s.subtitle}</div></button>)}</div>{style&&<div className="mt-5"><b>رنگ</b><div className="flex flex-wrap gap-2 mt-2">{style.colors.map((c:any)=><button key={c.hex} onClick={()=>setColor(c.name)} className="rounded-full border px-3 py-2 text-sm"><span className="inline-block w-4 h-4 rounded-full ml-1" style={{background:c.hex}}/>{c.name}</button>)}</div></div>}<input type="file" accept="image/jpeg,image/png" className="mt-6 w-full" onChange={e=>setFile(e.target.files?.[0]||null)}/>{err&&<p className="text-red-600 mt-3">{err}</p>}<button disabled={busy} onClick={run} className="gold-btn w-full rounded-xl py-3 mt-4">{busy?"در حال پردازش تصویر...":"پیش‌نمایش هوش مصنوعی"}</button></div><div>{url&&file?<><div className="rounded-3xl overflow-hidden"><ReactCompareSlider itemOne={<ReactCompareSliderImage src={URL.createObjectURL(file)} alt="قبل"/>} itemTwo={<ReactCompareSliderImage src={url} alt="بعد"/>}/></div><div className="flex gap-2 mt-3"><a download href={url} className="border border-gold rounded-xl px-4 py-2">دانلود نتیجه</a><a target="_blank" href={"https://wa.me/989058674412?text="+encodeURIComponent("سلام، می‌خوام نوبت بگیرم\nخدمت: "+service.title+"\nمدل: "+style.title+"\nرنگ: "+color)} className="gold-btn rounded-xl px-4 py-2">رزرو در واتساپ</a></div></>:<div className="min-h-72 rounded-3xl bg-gold/10 flex items-center justify-center text-gray-500">نتیجه قبل / بعد اینجا نمایش داده می‌شود</div>}</div></div></div></section>}
+import { useState } from "react";
+import { services } from "../lib/services";
+import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider";
+
+export default function PreviewStudio() {
+  const [service, setService] = useState(services[0]);
+  const [style, setStyle] = useState<any>(null);
+  const [color, setColor] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function run() {
+    setErr("");
+    if (!file) return setErr("لطفاً عکس چهره را انتخاب کنید");
+    if (file.size > 5242880) return setErr("حجم عکس نباید بیشتر از ۵ مگابایت باشد");
+    if (!["image/jpeg", "image/png"].includes(file.type)) return setErr("فقط عکس JPG و PNG قابل قبول است");
+    if (!style || !color) return setErr("مدل و رنگ را انتخاب کنید");
+
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      fd.append("service", service.title);
+      fd.append("style", style.title);
+      fd.append("color", color);
+      const r = await fetch("/api/preview", { method: "POST", body: fd });
+      const j = await r.json();
+      if (!r.ok) throw new Error();
+      setUrl(j.url);
+    } catch {
+      setErr("خطا در پردازش تصویر. لطفاً دوباره امتحان کنید");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="ai-studio">
+      <div className="ai-controls">
+        <div className="ai-step">
+          <span>01</span>
+          <div><small>انتخاب خدمت</small><strong>{service.title}</strong></div>
+        </div>
+
+        <div className="service-pills">
+          {services.map((s) => (
+            <button key={s.id} onClick={() => { setService(s); setStyle(null); setColor(""); }} className={service.id === s.id ? "active" : ""}>{s.title}</button>
+          ))}
+        </div>
+
+        <div className="ai-step">
+          <span>02</span>
+          <div><small>انتخاب مدل</small><strong>{style?.title || "یک مدل انتخاب کنید"}</strong></div>
+        </div>
+
+        <div className="mini-style-grid">
+          {service.styles.map((s) => (
+            <button key={s.id} onClick={() => { setStyle(s); setColor(s.colors[0].name); }} className={style?.id === s.id ? "selected" : ""}>
+              <span>{s.title}</span><small>{s.subtitle}</small>
+            </button>
+          ))}
+        </div>
+
+        {style && (
+          <div className="color-picker">
+            <small>03 / رنگ پیشنهادی</small>
+            <div>{style.colors.map((c: any) => (
+              <button key={c.hex} onClick={() => setColor(c.name)} className={color === c.name ? "selected" : ""}>
+                <i style={{ background: c.hex }} />{c.name}
+              </button>
+            ))}</div>
+          </div>
+        )}
+
+        <label className="upload-box">
+          <input type="file" accept="image/jpeg,image/png" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+          <span className="upload-icon">＋</span>
+          <strong>{file ? file.name : "عکس چهره خود را انتخاب کنید"}</strong>
+          <small>JPG یا PNG · حداکثر ۵ مگابایت</small>
+        </label>
+
+        {err && <p className="form-error">{err}</p>}
+        <button disabled={busy} onClick={run} className="gold-btn ai-run">{busy ? "در حال ساخت پیش‌نمایش..." : "ساخت پیش‌نمایش ↗"}</button>
+      </div>
+
+      <div className="ai-result">
+        <div className="result-top"><span>PREVIEW</span><span>{url ? "RESULT" : "READY"}</span></div>
+        {url && file ? (
+          <>
+            <div className="compare-frame">
+              <ReactCompareSlider itemOne={<ReactCompareSliderImage src={URL.createObjectURL(file)} alt="قبل" />} itemTwo={<ReactCompareSliderImage src={url} alt="بعد" />} />
+            </div>
+            <div className="result-actions">
+              <a download href={url}>دانلود نتیجه</a>
+              <a className="gold-btn" target="_blank" rel="noreferrer" href={"https://wa.me/989058674412?text=" + encodeURIComponent("سلام، می‌خوام نوبت بگیرم\nخدمت: " + service.title + "\nمدل: " + style.title + "\nرنگ: " + color)}>رزرو در واتساپ ↗</a>
+            </div>
+          </>
+        ) : (
+          <div className="result-empty">
+            <div className="result-mark">AR</div>
+            <strong>پیش‌نمایش شما اینجا نمایش داده می‌شود</strong>
+            <span>یک عکس، مدل و رنگ انتخاب کنید.</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
