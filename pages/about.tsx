@@ -1,5 +1,7 @@
 import Layout from "../components/Layout";
 
+// Vercel deployment trigger: source is intentionally formatted and valid TypeScript.
+
 export default function About() {
   return (
     <Layout>
