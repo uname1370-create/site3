@@ -1,1 +1,52 @@
-import Image from "next/image";import {Style} from "../lib/services";export default function ServiceSection({title,description,styles,onPick}:{title:string;description:string;styles:Style[];onPick:(s:Style)=>void}){return <section className="py-12"><h2 className="text-3xl font-bold">{title}</h2><p className="mt-2 text-gray-500">{description}</p><div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-7">{styles.map(s=><button key={s.id} onClick={()=>onPick(s)} className="overflow-hidden rounded-3xl bg-white text-right shadow-luxury border border-gold/10"><div className="relative aspect-[4/3] bg-gold"><Image src={s.image} alt={s.title} fill className="object-cover" onError={e=>e.currentTarget.style.display="none"}/><div className="absolute inset-0 flex items-center justify-center text-white font-bold">{s.title}</div></div><div className="p-4"><div className="font-bold">{s.title}</div><div className="text-xs text-gray-500 mt-1">{s.subtitle}</div><div className="flex gap-1 mt-3">{s.colors.map(c=><span key={c.hex} className="w-5 h-5 rounded-full border" style={{background:c.hex}} title={c.name}/>)}</div></div></button>)}</div></section>}
+import Image from "next/image";
+import { Style } from "../lib/services";
+
+export default function ServiceSection({
+  title,
+  description,
+  styles,
+  onPick,
+  index,
+}: {
+  title: string;
+  description: string;
+  styles: Style[];
+  onPick: (s: Style) => void;
+  index: number;
+}) {
+  return (
+    <section className="service-block">
+      <div className="service-heading">
+        <span className="service-number">0{index}</span>
+        <div>
+          <h3>{title}</h3>
+          <p>{description}</p>
+        </div>
+        <span className="service-arrow">↘</span>
+      </div>
+
+      <div className="style-grid">
+        {styles.map((s) => (
+          <button key={s.id} onClick={() => onPick(s)} className="style-card">
+            <div className="style-image">
+              <Image src={s.image} alt={s.title} fill className="object-cover" />
+              <div className="style-overlay" />
+              <span className="style-view">انتخاب مدل ↗</span>
+            </div>
+            <div className="style-info">
+              <div>
+                <h4>{s.title}</h4>
+                <p>{s.subtitle}</p>
+              </div>
+              <div className="color-dots">
+                {s.colors.slice(0, 4).map((c) => (
+                  <span key={c.hex} style={{ background: c.hex }} title={c.name} />
+                ))}
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
